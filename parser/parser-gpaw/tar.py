@@ -32,6 +32,9 @@ class Reader:
                     self.shapes[name].append(n)
                     self.dims[dim.attrib['name']] = n
 
+    def __contains__(self, name):
+        return name in self.parameters or name in self.shapes
+        
     def __getattr__(self, name):
         if name in self.parameters:
             return self.parameters[name]
@@ -59,3 +62,4 @@ class Reader:
 if __name__ == '__main__':
     r = Reader('H2.gpw')
     print(r.Eigenvalues, r.FermiLevel, r.UnitCell)
+    print('UnitCell' in r, 'sdgsdgsdfg' in r)
