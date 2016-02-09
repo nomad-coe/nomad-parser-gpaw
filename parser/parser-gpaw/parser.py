@@ -36,7 +36,7 @@ def parse(filename):
     p.startedParsingSession(filename, parser_info)
     with o(p, 'section_run'):
         p.addValue('program_name', 'GPAW')
-        with o(p, 'section_system_describtion'):
+        with o(p, 'section_system_description'):
             p.addArrayValues('simulation_cell', r.UnitCell)
             p.addArrayValues('atom_label', r.CartesianPositions)
             p.addArrayValues('configuration_periodic_dimensions',
