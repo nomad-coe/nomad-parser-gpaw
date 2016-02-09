@@ -2,13 +2,13 @@ package eu.nomad_lab.parsers
 import eu.nomad_lab.DefaultPythonInterpreter
 import org.{json4s => jn}
 
-object GPAWParser extends SimpleExternalParserGenerator(
-  name = "GPAWParser",
+object GpawParser extends SimpleExternalParserGenerator(
+  name = "GpawParser",
   parserInfo = jn.JObject(
-    ("name" -> jn.JString("GPAWParser")) ::
+    ("name" -> jn.JString("GpawParser")) ::
       ("version" -> jn.JString("1.0")) :: Nil),
-  mainFileTypes = Seq("application/tar"),
-  mainFileRe = "",
+  mainFileTypes = Seq("application/x-gtar"),
+  mainFileRe = "".r,
   cmd = Seq(DefaultPythonInterpreter.python2Exe(), "${envDir}/parsers/gpaw/parser/parser-gpaw/parser.py",
     "${mainFilePath}"),
   resList = Seq(
