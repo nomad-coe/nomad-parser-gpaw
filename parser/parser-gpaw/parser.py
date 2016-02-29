@@ -2,8 +2,8 @@ import os
 from contextlib import contextmanager
 import numpy as np
 from ase.data import chemical_symbols
-from nomadcore.unit_conversion.unit_conversion import convert_unit as cu
 import setup_paths
+from nomadcore.unit_conversion.unit_conversion import convert_unit as cu
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
 from nomadcore.parser_backend import JsonParseEventsWriterBackend
 from tar import Reader
