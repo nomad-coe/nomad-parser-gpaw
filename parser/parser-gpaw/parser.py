@@ -57,7 +57,7 @@ def parse(filename):
                            'GR_%.1f' % (c(h, 'bohr') * 1.0E15))  # in fm
         elif r.Mode == 'lcao':
             pass
-        with o(p, 'section_system_describtion'):
+        with o(p, 'section_system_description'):
             p.addArrayValues('simulation_cell', c(r.UnitCell, 'bohr'))
             symbols = np.array([chemical_symbols[z] for z in r.AtomicNumbers])
             p.addArrayValues('atom_label', symbols)
