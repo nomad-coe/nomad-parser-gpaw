@@ -75,8 +75,8 @@ def parse(filename):
                 p.addValue('XC_functional', r.XCFunctional)
                 if 'FermiWidth' in r:
                     p.addValue('smearing_kind', 'fermi')
-                    p.addRealVaule('smearing_width',
-                                   cu(r.FermiWidth, 'hartree'))
+                    p.addRealValue('smearing_width',
+                                   c(r.FermiWidth, 'hartree'))
             with o(p, 'section_eigenvalues_group'):
                 for eps_kn, occ_kn in zip(r.Eigenvalues, r.OccupationNumbers):
                     with o(p, 'section_eigenvalues'):
