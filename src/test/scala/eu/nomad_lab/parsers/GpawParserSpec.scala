@@ -2,8 +2,6 @@ package eu.nomad_lab.parsers
 
 import org.specs2.mutable.Specification
 
-
-
 object GpawParserSpec extends Specification {
   "GpawParserTest" >> {
     "test with json-events" >> {

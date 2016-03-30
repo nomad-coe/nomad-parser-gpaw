@@ -1,6 +1,6 @@
 package eu.nomad_lab.parsers
-import eu.{nomad_lab => lab}
-import org.{json4s => jn}
+import eu.{ nomad_lab => lab }
+import org.{ json4s => jn }
 import scala.collection.breakOut
 
 object GpawParser extends SimpleExternalParserGenerator(
@@ -10,8 +10,9 @@ object GpawParser extends SimpleExternalParserGenerator(
       ("parserId" -> jn.JString("GpawParser" + lab.GpawVersionInfo.version)) ::
       ("versionInfo" -> jn.JObject(
         ("nomadCoreVersion" -> jn.JString(lab.NomadCoreVersionInfo.version)) ::
-          (lab.GpawVersionInfo.toMap.map{ case (key, value) =>
-            (key -> jn.JString(value.toString))
+          (lab.GpawVersionInfo.toMap.map {
+            case (key, value) =>
+              (key -> jn.JString(value.toString))
           }(breakOut): List[(String, jn.JString)])
       )) :: Nil
   ),
@@ -33,9 +34,9 @@ object GpawParser extends SimpleExternalParserGenerator(
   ) ++ lab.DefaultPythonInterpreter.commonDirMapping()
 ) {
   override def isMainFile(filePath: String, bytePrefix: Array[Byte], stringPrefix: Option[String]): Option[ParserMatch] = {
-   if (filePath.endsWith(".gpw"))
+    if (filePath.endsWith(".gpw"))
       Some(ParserMatch(mainFileMatchPriority, mainFileMatchWeak))
-   else
+    else
       None
   }
 }
