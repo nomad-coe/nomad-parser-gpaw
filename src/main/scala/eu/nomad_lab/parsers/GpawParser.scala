@@ -24,6 +24,7 @@ object GpawParser extends SimpleExternalParserGenerator(
     "parser-gpaw/parser.py",
     "parser-gpaw/tar.py",
     "parser-gpaw/setup_paths.py",
+    "nomad_meta_info/public.nomadmetainfo.json",
     "nomad_meta_info/common.nomadmetainfo.json",
     "nomad_meta_info/meta_types.nomadmetainfo.json",
     "nomad_meta_info/gpaw.nomadmetainfo.json"
