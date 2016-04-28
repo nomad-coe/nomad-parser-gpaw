@@ -9,7 +9,9 @@ object GpawParser extends SimpleExternalParserGenerator(
     ("name" -> jn.JString("GpawParser")) ::
       ("parserId" -> jn.JString("GpawParser" + lab.GpawVersionInfo.version)) ::
       ("versionInfo" -> jn.JObject(
-        ("nomadCoreVersion" -> jn.JString(lab.NomadCoreVersionInfo.version)) ::
+        ("nomadCoreVersion" -> jn.JObject(lab.NomadCoreVersionInfo.toMap.map {
+          case (k, v) => k -> jn.JString(v.toString)
+        }(breakOut): List[(String, jn.JString)])) ::
           (lab.GpawVersionInfo.toMap.map {
             case (key, value) =>
               (key -> jn.JString(value.toString))
