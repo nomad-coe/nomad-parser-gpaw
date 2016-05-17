@@ -60,8 +60,8 @@ def parse(filename):
         with o(p, 'section_system'):
             p.addArrayValues('simulation_cell', c(r.UnitCell, 'bohr'))
             symbols = np.array([chemical_symbols[z] for z in r.AtomicNumbers])
-            p.addArrayValues('atom_label', symbols)
-            p.addArrayValues('atom_position', c(r.CartesianPositions, 'bohr'))
+            p.addArrayValues('atom_labels', symbols)
+            p.addArrayValues('atom_positions', c(r.CartesianPositions, 'bohr'))
             p.addArrayValues('configuration_periodic_dimensions',
                              np.array(r.BoundaryConditions, bool))
         with o(p, 'section_single_configuration_calculation'):
@@ -80,7 +80,7 @@ def parse(filename):
             with o(p, 'section_eigenvalues_group'):
                 for eps_kn, occ_kn in zip(r.Eigenvalues, r.OccupationNumbers):
                     with o(p, 'section_eigenvalues'):
-                        p.addArrayValues('eigenvalues_eigenvalues',
+                        p.addArrayValues('eigenvalues_values',
                                          c(eps_kn, 'hartree'))
                         p.addArrayValues('eigenvalues_occupation', occ_kn)
                         p.addArrayValues('eigenvalues_kpoints', r.IBZKPoints)
