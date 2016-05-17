@@ -42,22 +42,22 @@ def parse(filename):
     with o(p, 'section_run'):
         p.addValue('program_name', 'GPAW')
         if r.Mode == 'pw':
-            with o(p, 'section_basis_set_cell_associated'):
-                p.addValue('basis_set_cell_associated_name',
+            with o(p, 'section_basis_set_cell_dependent'):
+                p.addValue('basis_set_cell_dependent_name',
                            'PW_%.1f_Ry' % (r.PlaneWaveCutoff * 2.0))  # in Ry
                 p.addRealValue('basis_set_plane_wave_cutoff',
                                c(r.PlaneWaveCutoff, 'hartree'))
         elif r.Mode == 'fd':
-            with o(p, 'section_basis_set_cell_associated'):
+            with o(p, 'section_basis_set_cell_dependent'):
                 h1 = np.linalg.norm(r.UnitCell[0]) / r.dims['ngptsx']
                 h2 = np.linalg.norm(r.UnitCell[1]) / r.dims['ngptsy']
                 h3 = np.linalg.norm(r.UnitCell[2]) / r.dims['ngptsz']
                 h = (h1 + h2 + h3) / 3.0
-                p.addValue('basis_set_cell_associated_name',
+                p.addValue('basis_set_cell_dependent_name',
                            'GR_%.1f' % (c(h, 'bohr') * 1.0E15))  # in fm
         elif r.Mode == 'lcao':
             pass
-        with o(p, 'section_system_description'):
+        with o(p, 'section_system'):
             p.addArrayValues('simulation_cell', c(r.UnitCell, 'bohr'))
             symbols = np.array([chemical_symbols[z] for z in r.AtomicNumbers])
             p.addArrayValues('atom_label', symbols)
