@@ -77,13 +77,11 @@ def parse(filename):
                     p.addValue('smearing_kind', 'fermi')
                     p.addRealValue('smearing_width',
                                    c(r.FermiWidth, 'hartree'))
-            with o(p, 'section_eigenvalues_group'):
-                for eps_kn, occ_kn in zip(r.Eigenvalues, r.OccupationNumbers):
-                    with o(p, 'section_eigenvalues'):
-                        p.addArrayValues('eigenvalues_values',
-                                         c(eps_kn, 'hartree'))
-                        p.addArrayValues('eigenvalues_occupation', occ_kn)
-                        p.addArrayValues('eigenvalues_kpoints', r.IBZKPoints)
+            with o(p, 'section_eigenvalues'):
+                p.addArrayValues('eigenvalues_values',
+                                 c(r.Eigenvalues, 'hartree'))
+                p.addArrayValues('eigenvalues_occupation', r.OccupationNumbers)
+                p.addArrayValues('eigenvalues_kpoints', r.IBZKPoints)
     p.finishedParsingSession("ParseSuccess", None)
 
 if __name__ == '__main__':
