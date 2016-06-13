@@ -7,7 +7,7 @@ from nomadcore.unit_conversion.unit_conversion import convert_unit as cu
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
 from nomadcore.parser_backend import JsonParseEventsWriterBackend
 from tar import Reader
-
+from libxc_names import get_libxc_name
 
 @contextmanager
 def open_section(p, name):
@@ -75,7 +75,7 @@ def parse(filename):
                                  c(r.CartesianForces, 'bohr/hartree'))
             with o(p, 'section_method'):
                 p.addValue('electronic_structure_method', 'DFT')
-                p.addValue('XC_functional', r.XCFunctional)
+                p.addValue('XC_functional', get_libxc_name(r.XCFunctional))
                 p.addValue('scf_threshold_energy_change', c(r.EnergyError,
                                                             'hartree'))
                 if 'FermiWidth' in r:
