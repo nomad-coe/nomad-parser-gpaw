@@ -1,5 +1,4 @@
 
-
 short_names = {
         'LDA': 'LDA_X+LDA_C_PW',
         'PW91': 'GGA_X_PW91+GGA_C_PW91',
@@ -23,6 +22,7 @@ def get_libxc_name(name):
     else:
         libxc_name = name
     return libxc_name
+
 
 if __name__ == '__main__':
     print get_libxc_name('LDA')
