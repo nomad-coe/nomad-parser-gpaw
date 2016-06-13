@@ -56,7 +56,8 @@ def parse(filename):
                 p.addValue('basis_set_cell_dependent_name',
                            'GR_%.1f' % (c(h, 'bohr') * 1.0E15))  # in fm
         elif r.Mode == 'lcao':
-            pass
+            with o(p, 'section_basis_set_atom_centered'):
+                p.addValue('basis_set_atom_centered_short_name', r.BasisSet)
         with o(p, 'section_system'):
             p.addArrayValues('simulation_cell', c(r.UnitCell, 'bohr'))
             symbols = np.array([chemical_symbols[z] for z in r.AtomicNumbers])
@@ -68,16 +69,21 @@ def parse(filename):
             p.addRealValue('energy_total', c(r.Epot, 'hartree'))
             p.addRealValue('energy_XC', c(r.Exc, 'hartree'))
             p.addRealValue('electronic_kinetic_energy', c(r.Ekin, 'hartree'))
+            p.addRealValue('energy_correction_entropy', c(r.S, 'hartree'))
             if 'CartesianForces' in r:
                 p.addArrayValues('atom_forces_free',
                                  c(r.CartesianForces, 'bohr/hartree'))
             with o(p, 'section_method'):
+                p.addValue('electronic_structure_method', 'DFT')
                 p.addValue('XC_functional', r.XCFunctional)
+                p.addValue('scf_threshold_energy_change', c(r.EnergyError,
+                                                            'hartree'))
                 if 'FermiWidth' in r:
                     p.addValue('smearing_kind', 'fermi')
                     p.addRealValue('smearing_width',
                                    c(r.FermiWidth, 'hartree'))
             with o(p, 'section_eigenvalues'):
+                p.addValue('eigenvalues_kind', 'normal')
                 p.addArrayValues('eigenvalues_values',
                                  c(r.Eigenvalues, 'hartree'))
                 p.addArrayValues('eigenvalues_occupation', r.OccupationNumbers)
