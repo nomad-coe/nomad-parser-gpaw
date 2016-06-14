@@ -73,11 +73,17 @@ def parse(filename):
             if 'CartesianForces' in r:
                 p.addArrayValues('atom_forces_free',
                                  c(r.CartesianForces, 'bohr/hartree'))
+            p.addArrayValues('gpaw_magnetic_moments', r.MagneticMoments)
+            p.addRealValue('gpaw_spin_Sz', r.MagneticMoments.sum() / 2.0)
             with o(p, 'section_method'):
+                #p.addValue('relativity_method', 'pseudo_scalar_relativistic')
                 p.addValue('electronic_structure_method', 'DFT')
                 p.addValue('XC_functional', get_libxc_name(r.XCFunctional))
                 p.addValue('scf_threshold_energy_change', c(r.EnergyError,
                                                             'hartree'))
+                if r.FixMagneticMoment:
+                    p.addValue('gpaw_fixed_spin_Sz',
+                               r.MagneticMoments.sum() / 2.)
                 if 'FermiWidth' in r:
                     p.addValue('smearing_kind', 'fermi')
                     p.addRealValue('smearing_width',
