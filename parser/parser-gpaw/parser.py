@@ -9,6 +9,7 @@ from nomadcore.parser_backend import JsonParseEventsWriterBackend
 from tar import Reader
 from libxc_names import get_libxc_name
 
+
 @contextmanager
 def open_section(p, name):
     gid = p.openSection(name)
@@ -73,8 +74,12 @@ def parse(filename):
             if 'CartesianForces' in r:
                 p.addArrayValues('atom_forces_free',
                                  c(r.CartesianForces, 'bohr/hartree'))
-            p.addArrayValues('gpaw_magnetic_moments', r.MagneticMoments)
-            p.addRealValue('gpaw_spin_Sz', r.MagneticMoments.sum() / 2.0)
+            p.addArrayValues('x_gpaw_magnetic_moments', r.MagneticMoments)
+            p.addRealValue('x_gpaw_spin_Sz', r.MagneticMoments.sum() / 2.0)
+            p.addArrayValues('x_gpaw_atomic_density_matrices',
+                             r.AtomicDensityMatrices)
+            p.addArrayValues('x_gpaw_projections_real', r.Projections.real)
+            p.addArrayValues('x_gpaw_projections_imag', r.Projections.imag)
             with o(p, 'section_method'):
                 #p.addValue('relativity_method', 'pseudo_scalar_relativistic')
                 p.addValue('electronic_structure_method', 'DFT')
@@ -82,7 +87,7 @@ def parse(filename):
                 p.addValue('scf_threshold_energy_change', c(r.EnergyError,
                                                             'hartree'))
                 if r.FixMagneticMoment:
-                    p.addValue('gpaw_fixed_spin_Sz',
+                    p.addValue('x_gpaw_fixed_spin_Sz',
                                r.MagneticMoments.sum() / 2.)
                 if 'FermiWidth' in r:
                     p.addValue('smearing_kind', 'fermi')
