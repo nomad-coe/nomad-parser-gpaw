@@ -76,10 +76,10 @@ def parse(filename):
                                  c(r.CartesianForces, 'bohr/hartree'))
             p.addArrayValues('x_gpaw_magnetic_moments', r.MagneticMoments)
             p.addRealValue('x_gpaw_spin_Sz', r.MagneticMoments.sum() / 2.0)
-            p.addArrayValues('x_gpaw_atomic_density_matrices',
-                             r.AtomicDensityMatrices)
-            p.addArrayValues('x_gpaw_projections_real', r.Projections.real)
-            p.addArrayValues('x_gpaw_projections_imag', r.Projections.imag)
+            #p.addArrayValues('x_gpaw_atomic_density_matrices',
+            #                 r.AtomicDensityMatrices)
+            #p.addArrayValues('x_gpaw_projections_real', r.Projections.real)
+            #p.addArrayValues('x_gpaw_projections_imag', r.Projections.imag)
             with o(p, 'section_method'):
                 #p.addValue('relativity_method', 'pseudo_scalar_relativistic')
                 p.addValue('electronic_structure_method', 'DFT')
