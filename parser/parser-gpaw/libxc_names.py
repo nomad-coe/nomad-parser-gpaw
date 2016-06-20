@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 short_names = {
         'LDA': 'LDA_X+LDA_C_PW',
@@ -25,5 +26,5 @@ def get_libxc_name(name):
 
 
 if __name__ == '__main__':
-    print get_libxc_name('LDA')
-    print get_libxc_name('GGA_X_PBE')
+    print(get_libxc_name('LDA'))
+    print(get_libxc_name('GGA_X_PBE'))
