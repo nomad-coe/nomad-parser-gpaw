@@ -42,7 +42,9 @@ def parse(filename):
 
     with o(p, 'section_run'):
         p.addValue('program_name', 'GPAW')
+        p.addValue('program_version', '1.0.0')
         if r.Mode == 'pw':
+            p.addValue('program_basis_set_type', 'plane waves')
             with o(p, 'section_basis_set_cell_dependent'):
                 p.addValue('basis_set_cell_dependent_name',
                            'PW_%.1f_Ry' % (r.PlaneWaveCutoff * 2.0))  # in Ry
@@ -57,6 +59,7 @@ def parse(filename):
                 p.addValue('basis_set_cell_dependent_name',
                            'GR_%.1f' % (c(h, 'bohr') * 1.0E15))  # in fm
         elif r.Mode == 'lcao':
+            p.addValue('program_basis_set_type', 'numeric AOs')
             with o(p, 'section_basis_set_atom_centered'):
                 p.addValue('basis_set_atom_centered_short_name', r.BasisSet)
         with o(p, 'section_system'):
@@ -66,6 +69,10 @@ def parse(filename):
             p.addArrayValues('atom_positions', c(r.CartesianPositions, 'bohr'))
             p.addArrayValues('configuration_periodic_dimensions',
                              np.array(r.BoundaryConditions, bool))
+        with o(p, 'section_sampling_method'):
+            p.addValue('ensemble_type', 'NVE')
+        with o(p, 'section_frame_sequence'):
+            pass
         with o(p, 'section_single_configuration_calculation'):
             p.addRealValue('energy_total', c(r.Epot, 'hartree'))
             p.addRealValue('energy_XC', c(r.Exc, 'hartree'))
@@ -83,7 +90,6 @@ def parse(filename):
             with o(p, 'section_method'):
                 #p.addValue('relativity_method', 'pseudo_scalar_relativistic')
                 p.addValue('electronic_structure_method', 'DFT')
-                p.addValue('XC_functional', get_libxc_name(r.XCFunctional))
                 p.addValue('scf_threshold_energy_change', c(r.EnergyError,
                                                             'hartree'))
                 if r.FixMagneticMoment:
@@ -93,6 +99,10 @@ def parse(filename):
                     p.addValue('smearing_kind', 'fermi')
                     p.addRealValue('smearing_width',
                                    c(r.FermiWidth, 'hartree'))
+                with o(p, 'section_XC_functionals'):
+                    p.addValue('XC_functional_name',
+                               get_libxc_name(r.XCFunctional))
+
             with o(p, 'section_eigenvalues'):
                 p.addValue('eigenvalues_kind', 'normal')
                 p.addArrayValues('eigenvalues_values',
