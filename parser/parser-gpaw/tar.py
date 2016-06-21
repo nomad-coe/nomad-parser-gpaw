@@ -1,11 +1,13 @@
 from __future__ import print_function
+from builtins import str
+from builtins import object
 import tarfile
 import xml.etree.ElementTree as ElementTree
 
 import numpy as np
 
 
-class Reader:
+class Reader(object):
     def __init__(self, name):
         self.dims = {}
         self.shapes = {}
