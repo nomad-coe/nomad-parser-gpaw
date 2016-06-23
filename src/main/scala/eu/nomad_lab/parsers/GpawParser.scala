@@ -20,7 +20,7 @@ object GpawParser extends SimpleExternalParserGenerator(
   ),
   mainFileTypes = Seq("application/x-gtar"),
   mainFileRe = "".r,
-  cmd = Seq(lab.DefaultPythonInterpreter.python2Exe(), "${envDir}/parsers/gpaw/parser/parser-gpaw/parser.py",
+  cmd = Seq(lab.DefaultPythonInterpreter.pythonExe(), "${envDir}/parsers/gpaw/parser/parser-gpaw/parser.py",
     "${mainFilePath}"),
   resList = Seq(
     "parser-gpaw/parser.py",
