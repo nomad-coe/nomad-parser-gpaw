@@ -14,7 +14,7 @@ from libxc_names import get_libxc_name
 @contextmanager
 def open_section(p, name):
     gid = p.openSection(name)
-    yield
+    yield gid
     p.closeSection(name, gid)
 
 
@@ -63,7 +63,7 @@ def parse(filename):
             p.addValue('program_basis_set_type', 'numeric AOs')
             with o(p, 'section_basis_set_atom_centered'):
                 p.addValue('basis_set_atom_centered_short_name', r.BasisSet)
-        with o(p, 'section_system'):
+        with o(p, 'section_system') as system_gid:
             p.addArrayValues('simulation_cell', c(r.UnitCell, 'bohr'))
             symbols = np.array([chemical_symbols[z] for z in r.AtomicNumbers])
             p.addArrayValues('atom_labels', symbols)
@@ -75,6 +75,8 @@ def parse(filename):
         with o(p, 'section_frame_sequence'):
             pass
         with o(p, 'section_single_configuration_calculation'):
+            p.addValue('single_configuration_calculation_to_system_ref',
+                       system_gid)
             p.addRealValue('energy_total', c(r.Epot, 'hartree'))
             p.addRealValue('energy_XC', c(r.Exc, 'hartree'))
             p.addRealValue('electronic_kinetic_energy', c(r.Ekin, 'hartree'))
@@ -88,7 +90,9 @@ def parse(filename):
             #                 r.AtomicDensityMatrices)
             #p.addArrayValues('x_gpaw_projections_real', r.Projections.real)
             #p.addArrayValues('x_gpaw_projections_imag', r.Projections.imag)
-            with o(p, 'section_method'):
+            with o(p, 'section_method') as method_gid:
+                p.addValue('single_configuration_to_calculation_method_ref',
+                           method_gid)
                 #p.addValue('relativity_method', 'pseudo_scalar_relativistic')
                 p.addValue('electronic_structure_method', 'DFT')
                 p.addValue('scf_threshold_energy_change', c(r.EnergyError,
