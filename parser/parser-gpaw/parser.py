@@ -74,9 +74,26 @@ def parse(filename):
             p.addValue('ensemble_type', 'NVE')
         with o(p, 'section_frame_sequence'):
             pass
+        with o(p, 'section_method') as method_gid:
+            #p.addValue('relativity_method', 'pseudo_scalar_relativistic')
+            p.addValue('electronic_structure_method', 'DFT')
+            p.addValue('scf_threshold_energy_change', c(r.EnergyError,
+                                                        'hartree'))
+            if r.FixMagneticMoment:
+                p.addValue('x_gpaw_fixed_spin_Sz',
+                           r.MagneticMoments.sum() / 2.)
+            if 'FermiWidth' in r:
+                p.addValue('smearing_kind', 'fermi')
+                p.addRealValue('smearing_width',
+                               c(r.FermiWidth, 'hartree'))
+            with o(p, 'section_XC_functionals'):
+                p.addValue('XC_functional_name',
+                           get_libxc_name(r.XCFunctional))
         with o(p, 'section_single_configuration_calculation'):
             p.addValue('single_configuration_calculation_to_system_ref',
                        system_gid)
+            p.addValue('single_configuration_to_calculation_method_ref',
+                       method_gid)
             p.addRealValue('energy_total', c(r.Epot, 'hartree'))
             p.addRealValue('energy_XC', c(r.Exc, 'hartree'))
             p.addRealValue('electronic_kinetic_energy', c(r.Ekin, 'hartree'))
@@ -90,24 +107,6 @@ def parse(filename):
             #                 r.AtomicDensityMatrices)
             #p.addArrayValues('x_gpaw_projections_real', r.Projections.real)
             #p.addArrayValues('x_gpaw_projections_imag', r.Projections.imag)
-            with o(p, 'section_method') as method_gid:
-                p.addValue('single_configuration_to_calculation_method_ref',
-                           method_gid)
-                #p.addValue('relativity_method', 'pseudo_scalar_relativistic')
-                p.addValue('electronic_structure_method', 'DFT')
-                p.addValue('scf_threshold_energy_change', c(r.EnergyError,
-                                                            'hartree'))
-                if r.FixMagneticMoment:
-                    p.addValue('x_gpaw_fixed_spin_Sz',
-                               r.MagneticMoments.sum() / 2.)
-                if 'FermiWidth' in r:
-                    p.addValue('smearing_kind', 'fermi')
-                    p.addRealValue('smearing_width',
-                                   c(r.FermiWidth, 'hartree'))
-                with o(p, 'section_XC_functionals'):
-                    p.addValue('XC_functional_name',
-                               get_libxc_name(r.XCFunctional))
-
             with o(p, 'section_eigenvalues'):
                 p.addValue('eigenvalues_kind', 'normal')
                 p.addArrayValues('eigenvalues_values',
