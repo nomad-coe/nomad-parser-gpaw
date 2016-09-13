@@ -75,7 +75,7 @@ def parse(filename):
         with o(p, 'section_frame_sequence'):
             pass
         with o(p, 'section_method') as method_gid:
-            #p.addValue('relativity_method', 'pseudo_scalar_relativistic')
+            p.addValue('relativity_method', 'pseudo_scalar_relativistic')
             p.addValue('electronic_structure_method', 'DFT')
             p.addValue('scf_threshold_energy_change', c(r.EnergyError,
                                                         'hartree'))
