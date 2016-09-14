@@ -49,7 +49,7 @@ def parse(filename):
             with o(p, 'section_basis_set_cell_dependent'):
                 p.addValue('basis_set_cell_dependent_name',
                            'PW_%.1f_Ry' % (r.PlaneWaveCutoff * 2.0))  # in Ry
-                p.addRealValue('basis_set_plane_wave_cutoff',
+                p.addRealValue('basis_set_planewave_cutoff',
                                c(r.PlaneWaveCutoff, 'hartree'))
         elif r.Mode == 'fd':
             with o(p, 'section_basis_set_cell_dependent'):
