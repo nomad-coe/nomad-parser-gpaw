@@ -167,7 +167,7 @@ def parse(filename):
                             p.addArrayValues('band_segm_start_end',
                                              np.asarray(
                                                  [band_path.kpoints[0],
-                                                  band_path.kpoints[-1]])
+                                                  band_path.kpoints[-1]]))
 
 
     p.finishedParsingSession("ParseSuccess", None)
