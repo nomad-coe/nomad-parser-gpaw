@@ -137,7 +137,7 @@ def parse(filename):
             p.addRealValue('energy_reference_fermi',
                           c(r.occupations.fermilevel, 'eV'))
             if hasattr(r.results, 'forces'):
-                p.addArrayValues('atom_forces_free',
+                p.addArrayValues('atom_forces_free_raw',
                                  c(r.results.forces, 'eV/angstrom'))
             if hasattr(r.results, 'magmoms'):
                 p.addArrayValues('x_gpaw_magnetic_moments',
@@ -154,6 +154,22 @@ def parse(filename):
                 p.addArrayValues('eigenvalues_occupation',
                                  r.wave_functions.occupations)
                 #p.addArrayValues('eigenvalues_kpoints', r.IBZKPoints)
+            if hasattr(r.wave_functions, 'band_paths'): # could change in GPAW
+                with o(p, 'section_k_band'):
+                    for band_path in r.wave_functions.band_paths:
+                        with o(p, 'section_k_band_segment'):
+                            p.addArrayValues('band_energies',
+                                            c(band_path.eigenvalues, 'eV'))
+                            p.addArrayValues('band_k_points', 'eV',
+                                             band_path.kpoints)
+                            p.addArrayValues('band_segm_labels',
+                                            band_path.labels)
+                            p.addArrayValues('band_segm_start_end',
+                                             np.asarray(
+                                                 [band_path.kpoints[0],
+                                                  band_path.kpoints[-1]])
+
+
     p.finishedParsingSession("ParseSuccess", None)
 
 if __name__ == '__main__':
