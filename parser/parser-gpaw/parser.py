@@ -86,10 +86,10 @@ def parse(filename):
                 p.addValue('smearing_kind', 'fermi')
                 p.addRealValue('smearing_width',
                                c(r.FermiWidth, 'hartree'))
-            with o(p, 'section_XC_functionals'):
-                xc_names = get_libxc_xc_names(r.XCFunctional)
-                for name in xc_names.values():
-                    if name is not None:
+            xc_names = get_libxc_xc_names(r.XCFunctional)
+            for name in xc_names.values():
+                if name is not None:
+                    with o(p, 'section_XC_functionals'):
                         p.addValue('XC_functional_name', name)
         with o(p, 'section_single_configuration_calculation'):
             p.addValue('single_configuration_calculation_to_system_ref',
