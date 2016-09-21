@@ -8,7 +8,7 @@ from nomadcore.unit_conversion.unit_conversion import convert_unit as cu
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
 from nomadcore.parser_backend import JsonParseEventsWriterBackend
 from tar import Reader
-from libxc_names import get_libxc_name
+from libxc_names import get_libxc_xc_names
 
 
 @contextmanager
@@ -87,8 +87,10 @@ def parse(filename):
                 p.addRealValue('smearing_width',
                                c(r.FermiWidth, 'hartree'))
             with o(p, 'section_XC_functionals'):
-                p.addValue('XC_functional_name',
-                           get_libxc_name(r.XCFunctional))
+                xc_names = get_libxc_xc_names(r.XCFunctional)
+                for name in xc_names.values():
+                    if name is not None:
+                        p.addValue('XC_functional_name', name)
         with o(p, 'section_single_configuration_calculation'):
             p.addValue('single_configuration_calculation_to_system_ref',
                        system_gid)
