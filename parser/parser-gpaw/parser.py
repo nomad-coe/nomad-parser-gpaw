@@ -68,8 +68,11 @@ def parse(filename):
             symbols = np.array([chemical_symbols[z] for z in r.AtomicNumbers])
             p.addArrayValues('atom_labels', symbols)
             p.addArrayValues('atom_positions', c(r.CartesianPositions, 'bohr'))
-            p.addArrayValues('configuration_periodic_dimensions',
-                             np.array(r.BoundaryConditions, bool))
+            if r.Mode == 'pw':
+                pbc = np.array((1, 1, 1), bool)
+            else:
+                pbc = np.array(r.BoundaryConditions, bool)
+            p.addArrayValues('configuration_periodic_dimensions', pbc)
         with o(p, 'section_sampling_method'):
             p.addValue('ensemble_type', 'NVE')
         with o(p, 'section_frame_sequence'):
@@ -79,13 +82,36 @@ def parse(filename):
             p.addValue('electronic_structure_method', 'DFT')
             p.addValue('scf_threshold_energy_change', c(r.EnergyError,
                                                         'hartree'))
-            if r.FixMagneticMoment:
-                p.addValue('x_gpaw_fixed_spin_Sz',
-                           r.MagneticMoments.sum() / 2.)
+            if 'FixMagneticMoment' in r:
+                p.addValue('x_gpaw_fix_magnetic_moment',
+                           r.FixMagneticMoment)
+                if r.FixMagneticMoment:
+                    p.addValue('x_gpaw_fixed_spin_Sz',
+                               r.MagneticMoments.sum() / 2.)
             if 'FermiWidth' in r:
                 p.addValue('smearing_kind', 'fermi')
                 p.addRealValue('smearing_width',
                                c(r.FermiWidth, 'hartree'))
+            if 'FixDensity' in r:
+                p.addValue('x_gpaw_fix_density', r.FixDensity)
+            if 'DensityConvergenceCriterion' in r:
+                p.addRealValue('x_gpaw_density_convergence_criterion',
+                               r.DensityConvergenceCriterion)
+            if 'MixClass' in r:
+                p.addValue('x_gpaw_mix_class', r.MixClass)
+            if 'MixBeta' in r:
+                p.addValue('x_gpaw_mix_beta', r.MixBeta)
+            if 'MixWeight' in r:
+                p.addValue('x_gpaw_mix_weight', r.MixWeight)
+            if 'MixOld' in r:
+                p.addValue('x_gpaw_mix_old', r.MixOld)
+            if 'MaximumAngularMomentum' in r:
+                p.addValue('x_gpaw_maximum_angular_momentum',
+                           r.MaximumAngularMomentum)
+            if 'SymmetryTimeReversalSwitch' in r:
+                p.addValue('x_gpaw_symmetry_time_reversal_switch',
+                           r.SymmetryTimeReversalSwitch)
+            p.addValue('x_gpaw_xc_functional', r.XCFunctional)
             xc_names = get_libxc_xc_names(r.XCFunctional)
             for name in xc_names.values():
                 if name is not None:

@@ -1,3 +1,6 @@
+"""
+used with parser2.py, the new file format (aff)
+"""
 import numpy as np
 
 parameters = {
