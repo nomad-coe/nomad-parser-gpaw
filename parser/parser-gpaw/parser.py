@@ -9,7 +9,7 @@ from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
 from nomadcore.parser_backend import JsonParseEventsWriterBackend
 from tar import Reader
 from libxc_names import get_libxc_xc_names
-
+from versions import get_prog_version
 
 @contextmanager
 def open_section(p, name):
@@ -43,7 +43,7 @@ def parse(filename):
 
     with o(p, 'section_run'):
         p.addValue('program_name', 'GPAW')
-        p.addValue('program_version', '1.0.0')
+        p.addValue('program_version', get_prog_version(r.version))
         if r.Mode == 'pw':
             p.addValue('program_basis_set_type', 'plane waves')
             with o(p, 'section_basis_set_cell_dependent'):
