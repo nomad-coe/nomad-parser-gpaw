@@ -5,6 +5,7 @@ import numpy as np
 from ase import units
 from ase.data import chemical_symbols
 from ase.io.aff import affopen
+from ase.utils import basestring
 #from ase.io.trajectory import read_atoms
 from ase.data import atomic_masses
 from ase.units import Rydberg
@@ -154,7 +155,7 @@ def parse(filename):
                 p.addArrayValues('eigenvalues_occupation',
                                  r.wave_functions.occupations)
                 #p.addArrayValues('eigenvalues_kpoints', r.IBZKPoints)
-            if hasattr(r.wave_functions, 'band_paths'): # could change in GPAW
+            if 'band_paths' in r.wave_functions: # could change
                 with o(p, 'section_k_band'):
                     for band_path in r.wave_functions.band_paths:
                         with o(p, 'section_k_band_segment'):
