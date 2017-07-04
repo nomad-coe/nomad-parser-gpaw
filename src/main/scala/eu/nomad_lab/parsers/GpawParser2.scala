@@ -18,12 +18,12 @@ object GpawParser2 extends SimpleExternalParserGenerator(
           }(breakOut): List[(String, jn.JString)])
       )) :: Nil
   ),
-  // output file is binary and first 16 bytes is a string: 'AFFormatGPAW    '
+  // output file is binary and first 16 bytes is a string containing: 'GPAW'
   // In python the check is like this
-  // is_gpw_file = open('H2.gpw', 'r').read(16).strip()=='AFFormatGPAW'
+  // is_gpw_file = 'GPAW' in str(open('file.gpw', 'rb').read(16))
   // How do we do this in scala?
   mainFileTypes = Seq("application/x-bin"),
-  mainFileRe = "".r,
+  mainFileRe = "- of UlmGPAW|AFFormatGPAW".r,
   cmd = Seq(lab.DefaultPythonInterpreter.pythonExe(), "${envDir}/parsers/gpaw/parser/parser-gpaw/parser2.py",
     "${mainFilePath}"),
   resList = Seq(
