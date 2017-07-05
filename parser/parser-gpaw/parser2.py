@@ -150,7 +150,8 @@ def parse(filename):
                                      origin, 'angstrom')
                     p.addArrayValues('volumetric_data_displacements',
                                      displacements, 'angstrom')
-                    p.addArrayValues('volumetric_data_values', c(values, unit))
+                    p.addArrayValues('volumetric_data_values',
+                                     cu(values, unit))
                     p.addValue('volumetric_data_kind', kind)
 
             # H.atom.ulm.gpw test can be used to verify that pseudodensity
