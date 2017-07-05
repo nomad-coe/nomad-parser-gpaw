@@ -150,9 +150,8 @@ def parse(filename):
                                      origin, 'angstrom')
                     p.addArrayValues('volumetric_data_displacements',
                                      displacements, 'angstrom')
-                    p.addArrayValues('volumetric_data_values', values)
+                    p.addArrayValues('volumetric_data_values', c(values, unit))
                     p.addValue('volumetric_data_kind', kind)
-                    p.addValue('volumetric_data_unit', unit)
 
             # H.atom.ulm.gpw test can be used to verify that pseudodensity
             # integrates to 0.98, corresponding closely to the norm of the
