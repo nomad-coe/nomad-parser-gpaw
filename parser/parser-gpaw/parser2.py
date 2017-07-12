@@ -4,7 +4,7 @@ from contextlib import contextmanager
 import numpy as np
 from ase import units
 from ase.data import chemical_symbols
-from ase.io.aff import affopen
+from ase.io.ulm import ulmopen
 from ase.utils import basestring
 #from ase.io.trajectory import read_atoms
 from ase.data import atomic_masses
@@ -44,7 +44,7 @@ metaInfoEnv, warns = loadJsonFile(filePath=metaInfoPath,
 def parse(filename):
     p = JsonParseEventsWriterBackend(metaInfoEnv)
     o = open_section
-    r = affopen(filename) #  Reader(filename)
+    r = ulmopen(filename) #  Reader(filename)
     p.startedParsingSession(filename, parser_info)
     parms.update(r.parameters.asdict())
     with o(p, 'section_run'):
