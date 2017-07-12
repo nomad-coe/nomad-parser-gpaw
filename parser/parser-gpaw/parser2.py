@@ -145,13 +145,12 @@ def parse(filename):
                              c(fermilevels, 'eV'))
 
             # Load 3D arrays ("volumetric data")
-            origin = -0.5 * r.atoms.cell
+            origin = -0.5 * r.atoms.cell.sum(axis=0)
             npoints = np.array(r.density.density.shape[1:])
             npoints[~r.atoms.pbc] += 1
             displacements = r.atoms.cell / npoints
 
             def add_3d_array(values, kind, unit):
-                return
                 with o(p, 'section_volumetric_data'):
                     p.addArrayValues('volumetric_data_origin',
                                      c(origin, 'angstrom'))
