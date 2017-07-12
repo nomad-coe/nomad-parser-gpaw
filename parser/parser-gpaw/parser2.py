@@ -151,6 +151,7 @@ def parse(filename):
             displacements = r.atoms.cell / npoints
 
             def add_3d_array(values, kind, unit):
+                return
                 with o(p, 'section_volumetric_data'):
                     p.addArrayValues('volumetric_data_origin',
                                      c(origin, 'angstrom'))
