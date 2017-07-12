@@ -163,7 +163,6 @@ def parse(filename):
             add_3d_array(r.hamiltonian.potential, kind='potential_effective',
                          unit='eV*angstrom**(-3)')
 
-
             if 'forces' in r.results:
                 p.addArrayValues('atom_forces_free_raw',
                                  c(r.results.forces, 'eV/angstrom'))
