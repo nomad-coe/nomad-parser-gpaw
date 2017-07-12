@@ -132,10 +132,17 @@ def parse(filename):
                            c(r.hamiltonian.e_kinetic, 'eV'))
             p.addRealValue('energy_correction_entropy',
                            c(r.hamiltonian.e_entropy, 'eV'))
-            p.addRealValue('energy_reference_fermi',
-                          c(r.occupations.fermilevel, 'eV'))
-            p.addRealValue('energy_reference_fermi',
-                          c(r.occupations.fermilevel, 'eV'))
+            nspin = r.density.density.shape[0]
+            ef = r.occupations.fermilevel
+            fermilevels = np.zeros(nspin)
+            if nspin == 1:
+                fermilevels[:] = ef
+            elif nspin == 2:
+                split = r.occupations.split
+                fermilevels[0] = ef + 0.5 * split
+                fermilevels[1] = ef - 0.5 * split
+            p.addArrayValues('energy_reference_fermi',
+                             c(fermilevels, 'eV'))
 
             # Load 3D arrays ("volumetric data")
             origin = -0.5 * r.atoms.cell
