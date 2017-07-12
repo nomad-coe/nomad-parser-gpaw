@@ -153,11 +153,11 @@ def parse(filename):
             def add_3d_array(values, kind, unit):
                 with o(p, 'section_volumetric_data'):
                     p.addArrayValues('volumetric_data_origin',
-                                     origin, 'angstrom')
+                                     c(origin, 'angstrom'))
                     p.addArrayValues('volumetric_data_displacements',
-                                     displacements, 'angstrom')
+                                     c(displacements, 'angstrom'))
                     p.addArrayValues('volumetric_data_values',
-                                     cu(values, unit))
+                                     c(values, unit))
                     p.addValue('volumetric_data_kind', kind)
 
             # H.atom.ulm.gpw test can be used to verify that pseudodensity
