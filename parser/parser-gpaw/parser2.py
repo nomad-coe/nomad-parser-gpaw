@@ -136,6 +136,33 @@ def parse(filename):
                           c(r.occupations.fermilevel, 'eV'))
             p.addRealValue('energy_reference_fermi',
                           c(r.occupations.fermilevel, 'eV'))
+
+            # Load 3D arrays ("volumetric data")
+            origin = -0.5 * r.atoms.cell
+            npoints = np.array(r.density.density.shape[1:])
+            npoints[~r.atoms.pbc] += 1
+            displacements = r.atoms.cell / npoints
+
+            def add_3d_array(values, kind, unit):
+                with o(p, 'section_volumetric_data'):
+                    p.addArrayValues('volumetric_data_origin',
+                                     origin, 'angstrom')
+                    p.addArrayValues('volumetric_data_displacements',
+                                     displacements, 'angstrom')
+                    p.addArrayValues('volumetric_data_values',
+                                     cu(values, unit))
+                    p.addValue('volumetric_data_kind', kind)
+
+            # H.atom.ulm.gpw test can be used to verify that pseudodensity
+            # integrates to 0.98, corresponding closely to the norm of the
+            # H 1s pseudowavefunction (see output of "gpaw-setup H").
+            # It has mixed BCs so this should show that npoints is taken
+            # care of correctly, hopefully.
+            add_3d_array(r.density.density, kind='density',
+                         unit='angstrom**(-3)')
+            add_3d_array(r.hamiltonian.potential, kind='potential_effective',
+                         unit='eV*angstrom**(-3)')
+
             if 'forces' in r.results:
                 p.addArrayValues('atom_forces_free_raw',
                                  c(r.results.forces, 'eV/angstrom'))
