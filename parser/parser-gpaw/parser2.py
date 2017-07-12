@@ -26,7 +26,6 @@ def open_section(p, name):
 
 def c(value, unit=None):
     """ Dummy function for unit conversion"""
-    return value
     return cu(value, unit)
 
 
@@ -54,7 +53,7 @@ def parse(filename):
         mode = parms['mode']
         if isinstance(mode, basestring):
             mode = {'name': mode}
-        if  mode['name'] == 'pw':
+        if mode['name'] == 'pw':
             p.addValue('program_basis_set_type', 'plane waves')
             with o(p, 'section_basis_set_cell_dependent'):
                 p.addValue('basis_set_cell_dependent_name',
@@ -85,7 +84,7 @@ def parse(filename):
             p.addArrayValues('atom_positions', c(r.atoms.positions, 'angstrom'))
             p.addArrayValues('configuration_periodic_dimensions',
                              np.array(r.atoms.pbc, bool))
-            if hasattr(r.atoms, 'momenta'):
+            if 'momenta' in r.atoms:
                 masses = atomic_masses[r.atoms.numbers]
                 velocities = r.atoms.momenta / masses.reshape(-1, 1)
                 p.addArrayValues('atom_velocities',
@@ -137,10 +136,10 @@ def parse(filename):
                           c(r.occupations.fermilevel, 'eV'))
             p.addRealValue('energy_reference_fermi',
                           c(r.occupations.fermilevel, 'eV'))
-            if hasattr(r.results, 'forces'):
+            if 'forces' in r.results:
                 p.addArrayValues('atom_forces_free_raw',
                                  c(r.results.forces, 'eV/angstrom'))
-            if hasattr(r.results, 'magmoms'):
+            if 'magmons' in r.results:
                 p.addArrayValues('x_gpaw_magnetic_moments',
                                  r.results.magmoms)
                 p.addRealValue('x_gpaw_spin_Sz', r.results.magmoms.sum() / 2.0)
