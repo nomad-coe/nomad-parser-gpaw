@@ -16,5 +16,11 @@ object GpawParserSpec extends Specification {
     "Fe2 test with json" >> {
       ParserRun.parse(GpawParser, "parsers/gpaw/test/examples/Fe2.gpw", "json") must_== ParseResult.ParseSuccess
     }
+    "Au test with json-events" >> {
+      ParserRun.parse(GpawParser2, "parsers/gpaw/test/examples/Au.fcc.ulm.gpw", "json-events") must_== ParseResult.ParseSuccess
+    }
+    "Au test with json" >> {
+      ParserRun.parse(GpawParser2, "parsers/gpaw/test/examples/Au.fcc.ulm.gpw", "json") must_== ParseResult.ParseSuccess
+    }
   }
 }
