@@ -114,7 +114,7 @@ def parse(filename):
             p.addValue('scf_threshold_energy_change',
                        c(parms['convergence']['energy'], 'eV')) # eV / electron
             #if r.FixMagneticMoment:
-            #    p.addValue('x_gpaw_fixed_spin_Sz',
+            #    p.addValue('x_gpaw_fixed_spin_sz',
             #               r.MagneticMoments.sum() / 2.)
             if parms['occupations'] is None:  # use default values
                 if tuple(parms['kpts']) == (1, 1, 1):
@@ -127,13 +127,13 @@ def parse(filename):
             p.addRealValue('smearing_width',
                                c(parms['occupations']['width'], 'eV'))
             p.addRealValue('total_charge', parms['charge'])
-            with o(p, 'section_XC_functionals'):
-                p.addValue('XC_functional_name',
+            with o(p, 'section_xc_functionals'):
+                p.addValue('xc_functional_name',
                            get_libxc_name(parms['xc']))
         with o(p, 'section_single_configuration_calculation'):
             p.addValue('single_configuration_calculation_to_system_ref',
                        system_gid)
-            p.addValue('single_configuration_to_calculation_method_ref',
+            p.addValue('single_configuration_calculation_to_method_ref',
                        method_gid)
             p.addValue('single_configuration_calculation_converged',
                       r.scf.converged)
@@ -141,7 +141,7 @@ def parse(filename):
                            c(r.hamiltonian.e_total_extrapolated, 'eV'))
             p.addRealValue('energy_free',
                            c(r.hamiltonian.e_total_free, 'eV'))
-            p.addRealValue('energy_XC', c(r.hamiltonian.e_xc, 'eV'))
+            p.addRealValue('energy_xc', c(r.hamiltonian.e_xc, 'eV'))
             p.addRealValue('electronic_kinetic_energy',
                            c(r.hamiltonian.e_kinetic, 'eV'))
             p.addRealValue('energy_correction_entropy',
@@ -185,12 +185,16 @@ def parse(filename):
                          unit='eV*angstrom**(-3)')
 
             if 'forces' in r.results:
-                p.addArrayValues('atom_forces_free_raw',
+                fId = p.openSection('section_atom_forces')
+                p.addValue('atom_forces_quantity', 'energy_free')
+                p.addValue('atom_forces_constraints', 'raw')
+                p.addArrayValues('atom_forces',
                                  c(r.results.forces, 'eV/angstrom'))
+                p.closeSection('section_atom_forces', fId)
             if 'magmons' in r.results:
                 p.addArrayValues('x_gpaw_magnetic_moments',
                                  r.results.magmoms)
-                p.addRealValue('x_gpaw_spin_Sz', r.results.magmoms.sum() / 2.0)
+                p.addRealValue('x_gpaw_spin_sz', r.results.magmoms.sum() / 2.0)
             #p.addArrayValues('x_gpaw_atomic_density_matrices',
             #                 r.AtomicDensityMatrices)
             #p.addArrayValues('x_gpaw_projections_real', r.Projections.real)

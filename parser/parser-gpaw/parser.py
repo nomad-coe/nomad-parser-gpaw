@@ -100,7 +100,7 @@ def parse(filename):
                 p.addValue('x_gpaw_fix_magnetic_moment',
                            r.FixMagneticMoment)
                 if r.FixMagneticMoment:
-                    p.addValue('x_gpaw_fixed_spin_Sz',
+                    p.addValue('x_gpaw_fixed_spin_sz',
                                r.MagneticMoments.sum() / 2.)
             if 'FermiWidth' in r:
                 p.addValue('smearing_kind', 'fermi')
@@ -129,22 +129,25 @@ def parse(filename):
             xc_names = get_libxc_xc_names(r.XCFunctional)
             for name in xc_names.values():
                 if name is not None:
-                    with o(p, 'section_XC_functionals'):
-                        p.addValue('XC_functional_name', name)
+                    with o(p, 'section_xc_functionals'):
+                        p.addValue('xc_functional_name', name)
         with o(p, 'section_single_configuration_calculation'):
             p.addValue('single_configuration_calculation_to_system_ref',
                        system_gid)
-            p.addValue('single_configuration_to_calculation_method_ref',
+            p.addValue('single_configuration_calculation_to_method_ref',
                        method_gid)
             p.addRealValue('energy_total', c(r.Epot, 'hartree'))
-            p.addRealValue('energy_XC', c(r.Exc, 'hartree'))
+            p.addRealValue('energy_xc', c(r.Exc, 'hartree'))
             p.addRealValue('electronic_kinetic_energy', c(r.Ekin, 'hartree'))
             p.addRealValue('energy_correction_entropy', c(r.S, 'hartree'))
             if 'CartesianForces' in r:
-                p.addArrayValues('atom_forces_free',
+                fId = p.openSection('section_atom_forces')
+                p.addValue('atom_forces_quantity', 'energy_free')
+                p.addArrayValues('atom_forces',
                                  c(r.CartesianForces, 'bohr/hartree'))
+                p.closeSection('section_atom_forces', fId)
             p.addArrayValues('x_gpaw_magnetic_moments', r.MagneticMoments)
-            p.addRealValue('x_gpaw_spin_Sz', r.MagneticMoments.sum() / 2.0)
+            p.addRealValue('x_gpaw_spin_sz', r.MagneticMoments.sum() / 2.0)
             #p.addArrayValues('x_gpaw_atomic_density_matrices',
             #                 r.AtomicDensityMatrices)
             #p.addArrayValues('x_gpaw_projections_real', r.Projections.real)
