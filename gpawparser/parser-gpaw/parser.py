@@ -1,11 +1,11 @@
 # Copyright 2015-2018 Mikkel Strange, Fawzi Mohamed, Ankit Kariryaa, Ask Hjorth Larsen, Jens Jørgen Mortensen
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,6 +14,7 @@
 
 from __future__ import division
 import os
+import logging
 from contextlib import contextmanager
 import numpy as np
 from ase.data import chemical_symbols
@@ -40,17 +41,38 @@ def c(value, unit=None):
 parser_info = {"name": "parser_gpaw", "version": "1.0"}
 path = '../../../../nomad-meta-info/meta_info/nomad_meta_info/' +\
         'gpaw.nomadmetainfo.json'
+# metaInfoPath = os.path.normpath(
+#     os.path.join(os.path.dirname(os.path.abspath(__file__)), path))
+
+# metaInfoEnv, warns = loadJsonFile(filePath=metaInfoPath,
+#                                   dependencyLoader=None,
+#                                   extraArgsHandling=InfoKindEl.ADD_EXTRA_ARGS,
+#                                   uri=None)
+
+import nomad_meta_info
 metaInfoPath = os.path.normpath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), path))
+    os.path.join(os.path.dirname(os.path.abspath(nomad_meta_info.__file__)),
+    "gpaw.nomadmetainfo.json"))
+metaInfoEnv, warnings = loadJsonFile(
+    filePath = metaInfoPath, dependencyLoader = None,
+    extraArgsHandling = InfoKindEl.ADD_EXTRA_ARGS, uri = None)
 
-metaInfoEnv, warns = loadJsonFile(filePath=metaInfoPath,
-                                  dependencyLoader=None,
-                                  extraArgsHandling=InfoKindEl.ADD_EXTRA_ARGS,
-                                  uri=None)
+class LibAtomsParserWrapper():
+    """ A proper class envolop for running this parser using Noamd-FAIRD infra. """
+    def __init__(self, backend, **kwargs):
+        self.backend_factory = backend
 
+    def parse(self, mainfile):
+        from unittest.mock import patch
+        logging.info('lib-atoms parser started')
+        logging.getLogger('nomadcore').setLevel(logging.WARNING)
+        backend = self.backend_factory(metaInfoEnv)
+        backend = parse_without_class(mainfile, backend)
+        return backend
 
-def parse(filename):
-    p = JsonParseEventsWriterBackend(metaInfoEnv)
+def parse_without_class(filename, backend):
+    # p = JsonParseEventsWriterBackend(metaInfoEnv)
+    p = backend
     o = open_section
     r = Reader(filename)
     p.startedParsingSession(filename, parser_info)
