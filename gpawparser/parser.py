@@ -41,13 +41,6 @@ def c(value, unit=None):
 parser_info = {"name": "parser_gpaw", "version": "1.0"}
 path = '../../../../nomad-meta-info/meta_info/nomad_meta_info/' +\
         'gpaw.nomadmetainfo.json'
-# metaInfoPath = os.path.normpath(
-#     os.path.join(os.path.dirname(os.path.abspath(__file__)), path))
-
-# metaInfoEnv, warns = loadJsonFile(filePath=metaInfoPath,
-#                                   dependencyLoader=None,
-#                                   extraArgsHandling=InfoKindEl.ADD_EXTRA_ARGS,
-#                                   uri=None)
 
 import nomad_meta_info
 metaInfoPath = os.path.normpath(
@@ -57,14 +50,14 @@ metaInfoEnv, warnings = loadJsonFile(
     filePath = metaInfoPath, dependencyLoader = None,
     extraArgsHandling = InfoKindEl.ADD_EXTRA_ARGS, uri = None)
 
-class GpawParserWrapper():
+class GPAWParserWrapper():
     """ A proper class envolop for running this parser using Noamd-FAIRD infra. """
     def __init__(self, backend, **kwargs):
         self.backend_factory = backend
 
     def parse(self, mainfile):
         from unittest.mock import patch
-        logging.info('lib-atoms parser started')
+        logging.info('GPAW parser started')
         logging.getLogger('nomadcore').setLevel(logging.WARNING)
         backend = self.backend_factory(metaInfoEnv)
         backend = parse_without_class(mainfile, backend)
