@@ -26,7 +26,6 @@ from ase.data import atomic_masses
 from ase.units import Rydberg
 from nomadcore.unit_conversion.unit_conversion import convert_unit as cu
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
-from nomadcore.parser_backend import JsonParseEventsWriterBackend
 from gpawparser.libxc_names import get_libxc_name
 from gpawparser.default_parameters import parameters as parms
 
@@ -47,31 +46,21 @@ parser_info = {"name": "parser2_gpaw", "version": "1.0"}
 path = '../../../../nomad-meta-info/meta_info/nomad_meta_info/' +\
         'gpaw.nomadmetainfo.json'
 
-import nomad_meta_info
-metaInfoPath = os.path.normpath(
-    os.path.join(os.path.dirname(os.path.abspath(nomad_meta_info.__file__)),
-    "gpaw.nomadmetainfo.json"))
-metaInfoEnv, warnings = loadJsonFile(
-    filePath = metaInfoPath, dependencyLoader = None,
-    extraArgsHandling = InfoKindEl.ADD_EXTRA_ARGS, uri = None)
-
 class GPAWParser2Wrapper():
     """ A proper class envolop for running this parser using Noamd-FAIRD infra. """
     def __init__(self, backend, **kwargs):
         self.backend_factory = backend
 
     def parse(self, mainfile):
-        from unittest.mock import patch
         logging.info('GPAW parser 2 (note the 2) started')
         logging.getLogger('nomadcore').setLevel(logging.WARNING)
-        backend = self.backend_factory(metaInfoEnv)
+        backend = self.backend_factory("gpaw.nomadmetainfo.json")
         backend = parse_without_class(mainfile, backend)
         return backend
 
 
 def parse_without_class(filename, backend):
     p = backend
-    # p = JsonParseEventsWriterBackend(metaInfoEnv)
     o = open_section
     r = ulmopen(filename) #  Reader(filename)
     p.startedParsingSession(filename, parser_info)

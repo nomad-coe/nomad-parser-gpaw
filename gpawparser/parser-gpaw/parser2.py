@@ -1,11 +1,11 @@
 # Copyright 2015-2018 Mikkel Strange, Fawzi Mohamed, Ankit Kariryaa, Ask Hjorth Larsen, Jens Jørgen Mortensen
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,10 +26,10 @@ from ase.units import Rydberg
 import setup_paths
 from nomadcore.unit_conversion.unit_conversion import convert_unit as cu
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
-from nomadcore.parser_backend import JsonParseEventsWriterBackend
 from libxc_names import get_libxc_name
 from default_parameters import parameters as parms
 
+from nomad.parsing.legacy import Backend
 
 @contextmanager
 def open_section(p, name):
@@ -56,7 +56,7 @@ metaInfoEnv, warns = loadJsonFile(filePath=metaInfoPath,
 
 
 def parse(filename):
-    p = JsonParseEventsWriterBackend(metaInfoEnv)
+    p = Backend(metaInfoEnv)
     o = open_section
     r = ulmopen(filename) #  Reader(filename)
     p.startedParsingSession(filename, parser_info)

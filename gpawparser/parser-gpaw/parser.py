@@ -21,7 +21,6 @@ from ase.data import chemical_symbols
 import setup_paths
 from nomadcore.unit_conversion.unit_conversion import convert_unit as cu
 from nomadcore.local_meta_info import loadJsonFile, InfoKindEl
-from nomadcore.parser_backend import JsonParseEventsWriterBackend
 from tar import Reader
 from libxc_names import get_libxc_xc_names
 from versions import get_prog_version
@@ -39,23 +38,6 @@ def c(value, unit=None):
 
 
 parser_info = {"name": "parser_gpaw", "version": "1.0"}
-path = '../../../../nomad-meta-info/meta_info/nomad_meta_info/' +\
-        'gpaw.nomadmetainfo.json'
-# metaInfoPath = os.path.normpath(
-#     os.path.join(os.path.dirname(os.path.abspath(__file__)), path))
-
-# metaInfoEnv, warns = loadJsonFile(filePath=metaInfoPath,
-#                                   dependencyLoader=None,
-#                                   extraArgsHandling=InfoKindEl.ADD_EXTRA_ARGS,
-#                                   uri=None)
-
-import nomad_meta_info
-metaInfoPath = os.path.normpath(
-    os.path.join(os.path.dirname(os.path.abspath(nomad_meta_info.__file__)),
-    "gpaw.nomadmetainfo.json"))
-metaInfoEnv, warnings = loadJsonFile(
-    filePath = metaInfoPath, dependencyLoader = None,
-    extraArgsHandling = InfoKindEl.ADD_EXTRA_ARGS, uri = None)
 
 class LibAtomsParserWrapper():
     """ A proper class envolop for running this parser using Noamd-FAIRD infra. """
@@ -63,15 +45,13 @@ class LibAtomsParserWrapper():
         self.backend_factory = backend
 
     def parse(self, mainfile):
-        from unittest.mock import patch
         logging.info('lib-atoms parser started')
         logging.getLogger('nomadcore').setLevel(logging.WARNING)
-        backend = self.backend_factory(metaInfoEnv)
+        backend = self.backend_factory("gpaw.nomadmetainfo.json")
         backend = parse_without_class(mainfile, backend)
         return backend
 
 def parse_without_class(filename, backend):
-    # p = JsonParseEventsWriterBackend(metaInfoEnv)
     p = backend
     o = open_section
     r = Reader(filename)
