@@ -1,0 +1,7 @@
+code-label: GPAW
+code-label-style: All in capitals
+code-url: https://wiki.fysik.dtu.dk/gpaw/
+parser-dir-name: dependencies/parsers/gpaw/
+parser-git-url: https://gitlab.mpcdf.mpg.de/nomad-lab/parser-gpaw
+parser-specific: ''
+table-of-files: ''
