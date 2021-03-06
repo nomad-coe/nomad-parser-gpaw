@@ -16,5 +16,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from gpawparser.parser import GPAWParserWrapper
-from gpawparser.parser2 import GPAWParser2Wrapper
+from gpawparser.gpaw_parser import GPAWParser
