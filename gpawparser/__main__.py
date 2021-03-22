@@ -1,8 +1,7 @@
 #
 # Copyright The NOMAD Authors.
 #
-# This file is part of NOMAD.
-# See https://nomad-lab.eu for further info.
+# This file is part of NOMAD. See https://nomad-lab.eu for further info.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,18 +16,17 @@
 # limitations under the License.
 #
 
-from ase.build import bulk
-from gpaw import GPAW, PW, FermiDirac
+import sys
+import json
+import logging
 
-a = 5.43
-si = bulk('Si', 'diamond', a)
+from nomad.utils import configure_logging
+from nomad.datamodel import EntryArchive
+from gpawparser import GPAWParser
 
-modes = [{'name': 'pw', 'ecut': 300}, 'fd', 'lcao']
-for mode in modes:
-    calc = GPAW(mode=mode, kpts=(4, 4,4), txt='Si.txt', basis='dzp')
-    si.calc = calc
-    si.get_potential_energy()
-    if isinstance(mode, basestring):
-        mode = {'name': mode}
-    print(mode)
-    calc.write('Si_' + mode['name'] + '.gpw2')
+
+if __name__ == "__main__":
+    configure_logging(console_log_level=logging.DEBUG)
+    archive = EntryArchive()
+    GPAWParser().parse(sys.argv[1], archive, logging)
+    json.dump(archive.m_to_dict(), sys.stdout, indent=2)
