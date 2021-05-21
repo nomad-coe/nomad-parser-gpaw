@@ -1,10 +1,10 @@
 import numpy as np
-import pint
 import logging
 import ase
 from ase.io.ulm import Reader
 
 from .metainfo import m_env
+from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser import FileParser, TarParser, XMLParser, DataTextParser
 from nomad.datamodel.metainfo.common_dft import Run, BasisSetCellDependent, System,\
@@ -279,10 +279,12 @@ class GPAWParser(FairdiParser):
         self.parser.logger = logger
 
     def apply_unit(self, val, unit):
-        units_map = {'ev': 'electron_volt'}
+        units_map = {
+            'ev': ureg.eV, 'hartree': ureg.hartree, 'angstrom': ureg.angstrom,
+            'bohr': ureg.bohr, 'femtosecond': ureg.fs}
         p_unit = self.parser.info['parameter'].get(unit, '').lower()
         unit = units_map.get(p_unit, p_unit) if p_unit else unit
-        return pint.Quantity(val, unit)
+        return val * unit
 
     def get_basis_set_name(self):
         basis_set = self.archive.section_run[-1].program_basis_set_type
@@ -296,8 +298,7 @@ class GPAWParser(FairdiParser):
             if cell is None or ngpts is None:
                 return
             h_grid = np.linalg.norm(cell, axis=1) / np.array(ngpts[:3])
-            h_grid = pint.Quantity(
-                np.sum(h_grid) / 3.0, self.parser.info['parameter']['lengthunit'].lower())
+            h_grid = self.apply_unit(np.sum(h_grid) / 3.0, 'lengthunit')
             return 'GR_%.1f' % (h_grid.to('fm').magnitude)
         elif basis_set == 'numeric AOs':
             return self.parser.get_parameter('basisset')
@@ -375,8 +376,7 @@ class GPAWParser(FairdiParser):
             if val is not None:
                 energyunit = self.apply_unit(1, 'energyunit').units
                 lengthunit = self.apply_unit(1, 'lengthunit').units
-                unit = '%s/%s' % (energyunit, lengthunit)
-                setattr(sec_scc, key, pint.Quantity(val, unit))
+                setattr(sec_scc, key, val * energyunit / lengthunit)
 
         # magnetic moments
         magnetic_moments = self.parser.get_array('magneticmoments')
@@ -434,14 +434,12 @@ class GPAWParser(FairdiParser):
                     continue
                 sec_vol = sec_scc.m_create(VolumetricData)
                 sec_vol.volumetric_data_kind = key
-                sec_vol.volumetric_data_origin = pint.Quantity(
-                    origin, lengthunit).to('m').magnitude
-                sec_vol.volumetric_data_displacements = pint.Quantity(
-                    displacements, lengthunit).to('m').magnitude
+                sec_vol.volumetric_data_origin = (origin * lengthunit).to('m').magnitude
+                sec_vol.volumetric_data_displacements = (displacements * lengthunit).to('m').magnitude
                 if key == 'density':
-                    val = pint.Quantity(val, '1/(%s**3)' % lengthunit).to('1/m**3')
+                    val = (val / lengthunit ** 3).to('1/m**3')
                 else:
-                    val = pint.Quantity(val, '%s/(%s**3)' % (energyunit, lengthunit)).to('J/m**3')
+                    val = (val * energyunit / lengthunit ** 3).to('J/m**3')
                 sec_vol.volumetric_data_values = val.magnitude
 
         converged = self.parser.get_parameter('converged')
@@ -474,8 +472,7 @@ class GPAWParser(FairdiParser):
         if momenta is not None:
             masses = np.array([ase.data.atomic_masses[self.parser.get_array('atomicnumbers')]])
             velocities = momenta / masses.reshape(-1, 1)
-            sec_system.atom_velocities = pint.Quantity(
-                velocities * ase.units.fs / ase.units.Angstrom, 'angstrom/femtosecond')
+            sec_system.atom_velocities = velocities * ase.units.fs / ase.units.Angstrom * ureg.angstrom / ureg.fs
 
     def parse(self, filepath, archive, logger):
         self.filepath = filepath
