@@ -9,7 +9,7 @@ from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser import FileParser, TarParser, XMLParser, DataTextParser
 from nomad.datamodel.metainfo.common_dft import Run, BasisSetCellDependent, System,\
     BasisSetAtomCentered, SamplingMethod, Method, XCFunctionals, BandEnergies, BandEnergiesValues,\
-    SingleConfigurationCalculation, VolumetricData, KBand, KBandSegment
+    SingleConfigurationCalculation, VolumetricData, BandStructure
 
 
 class GPWParser(TarParser):
@@ -408,18 +408,24 @@ class GPAWParser(FairdiParser):
         # band path (TODO only in ulm?)
         band_paths = self.parser.get_array('band_paths')
         if band_paths is not None:
-            sec_k_band = sec_scc.m_create(KBand)
+            sec_k_band = sec_scc.m_create(BandStructure, SingleConfigurationCalculation.band_structure_electronic)
             for band_path in band_paths:
-                sec_band_seg = sec_k_band.m_create(KBandSegment)
+                sec_band_seg = sec_k_band.m_create(BandEnergies)
                 if band_path.get('eigenvalues', None) is not None:
-                    sec_band_seg.band_energies = self.apply_unit(band_path.get(
-                        'eigenvalues'), 'energyunit')
+                    energies = self.apply_unit(band_path.get('eigenvalues'), 'energyunit')
+                    for spin in range(len(energies)):
+                        for kpt in range(len(energies[spin])):
+                            sec_band_energies = sec_band_seg.m_create(BandEnergiesValues)
+                            sec_band_energies.band_energies_spin = spin
+                            sec_band_energies.band_energies_kpoints_index = kpt
+                            sec_band_energies.band_energies_values = energies[spin][kpt]
                 kpoints = band_path.get('kpoints', None)
                 if kpoints is not None:
-                    sec_band_seg.band_k_points = kpoints
-                    sec_band_seg.band_segm_start_end = np.asarray(kpoints[0], kpoints[-1])
+                    sec_band_seg.band_energies_kpoints = kpoints
                 if band_path.get('labels', None) is not None:
-                    sec_band_seg.band_segm_labels = band_path.get('labels')
+                    labels = [None] * len(kpoints)
+                    labels[0], labels[-1] = band_path.get('labels')
+                    sec_band_seg.band_energies_kpoints_labels = labels
 
         # volumetric data
         density = self.parser.get_array('density')
