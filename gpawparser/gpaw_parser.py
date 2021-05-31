@@ -8,7 +8,7 @@ from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser import FileParser, TarParser, XMLParser, DataTextParser
 from nomad.datamodel.metainfo.common_dft import Run, BasisSetCellDependent, System,\
-    BasisSetAtomCentered, SamplingMethod, Method, XCFunctionals, Eigenvalues,\
+    BasisSetAtomCentered, SamplingMethod, Method, XCFunctionals, BandEnergies, BandEnergiesValues,\
     SingleConfigurationCalculation, VolumetricData, KBand, KBandSegment
 
 
@@ -392,14 +392,18 @@ class GPAWParser(FairdiParser):
         # eigenvalues
         eigenvalues = self.parser.get_array('eigenvalues')
         if eigenvalues is not None:
-            sec_eigenvalues = sec_scc.m_create(Eigenvalues)
-            sec_eigenvalues.eigenvalues_kind = 'normal'
-            sec_eigenvalues.eigenvalues_values = self.apply_unit(eigenvalues, 'energyunit')
-            for key in ['occupation', 'kpoints']:
-                val = self.parser.get_array(key)
-                if val is None:
-                    continue
-                setattr(sec_eigenvalues, 'eigenvalues_%s' % key, val)
+            sec_eigenvalues = sec_scc.m_create(BandEnergies)
+            sec_eigenvalues.band_energies_kpoints = self.parser.get_array('kpoints')
+            values = self.apply_unit(eigenvalues, 'energyunit')
+            occupations = self.parser.get_array('occupation')
+            for spin in range(len(values)):
+                for kpt in range(len(values[spin])):
+                    sec_eigenvalues_values = sec_eigenvalues.m_create(BandEnergiesValues)
+                    sec_eigenvalues_values.band_energies_spin = spin
+                    sec_eigenvalues_values.band_energies_kpoints_index = kpt
+                    sec_eigenvalues_values.band_energies_values = values[spin][kpt]
+                    if occupations is not None:
+                        sec_eigenvalues_values.band_energies_occupations = occupations[spin][kpt]
 
         # band path (TODO only in ulm?)
         band_paths = self.parser.get_array('band_paths')
