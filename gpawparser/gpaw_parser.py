@@ -393,17 +393,17 @@ class GPAWParser(FairdiParser):
         eigenvalues = self.parser.get_array('eigenvalues')
         if eigenvalues is not None:
             sec_eigenvalues = sec_scc.m_create(BandEnergies)
-            sec_eigenvalues.band_energies_kpoints = self.parser.get_array('kpoints')
+            sec_eigenvalues.kpoints = self.parser.get_array('kpoints')
             values = self.apply_unit(eigenvalues, 'energyunit')
             occupations = self.parser.get_array('occupation')
             for spin in range(len(values)):
                 for kpt in range(len(values[spin])):
                     sec_eigenvalues_values = sec_eigenvalues.m_create(BandEnergiesValues)
-                    sec_eigenvalues_values.band_energies_spin = spin
-                    sec_eigenvalues_values.band_energies_kpoints_index = kpt
-                    sec_eigenvalues_values.band_energies_values = values[spin][kpt]
+                    sec_eigenvalues_values.spin = spin
+                    sec_eigenvalues_values.kpoints_index = kpt
+                    sec_eigenvalues_values.value = values[spin][kpt]
                     if occupations is not None:
-                        sec_eigenvalues_values.band_energies_occupations = occupations[spin][kpt]
+                        sec_eigenvalues_values.occupations = occupations[spin][kpt]
 
         # band path (TODO only in ulm?)
         band_paths = self.parser.get_array('band_paths')
@@ -416,16 +416,16 @@ class GPAWParser(FairdiParser):
                     for spin in range(len(energies)):
                         for kpt in range(len(energies[spin])):
                             sec_band_energies = sec_band_seg.m_create(BandEnergiesValues)
-                            sec_band_energies.band_energies_spin = spin
-                            sec_band_energies.band_energies_kpoints_index = kpt
-                            sec_band_energies.band_energies_values = energies[spin][kpt]
+                            sec_band_energies.spin = spin
+                            sec_band_energies.kpoints_index = kpt
+                            sec_band_energies.value = energies[spin][kpt]
                 kpoints = band_path.get('kpoints', None)
                 if kpoints is not None:
-                    sec_band_seg.band_energies_kpoints = kpoints
+                    sec_band_seg.kpoints = kpoints
                 if band_path.get('labels', None) is not None:
                     labels = [None] * len(kpoints)
                     labels[0], labels[-1] = band_path.get('labels')
-                    sec_band_seg.band_energies_kpoints_labels = labels
+                    sec_band_seg.kpoints_labels = labels
 
         # volumetric data
         density = self.parser.get_array('density')

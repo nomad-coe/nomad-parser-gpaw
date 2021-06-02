@@ -58,10 +58,10 @@ def test_gpw(parser):
     assert sec_scc.x_gpaw_fixed_spin_Sz == 0.0
     assert sec_scc.energy_reference_fermi[1].magnitude == approx(-4.99922789e-19)
     # there is supposed to be magnetic but read eigenvalues are not spinpol
-    assert np.shape(sec_scc.eigenvalues[0].band_energies[0].band_energies_values) == (2,)
-    assert np.shape(sec_scc.eigenvalues[0].band_energies_kpoints) == (1, 3)
-    assert sec_scc.eigenvalues[0].band_energies[0].band_energies_values[1].magnitude == approx(5.54481608e-19)
-    assert sec_scc.eigenvalues[0].band_energies[0].band_energies_occupations[0] == approx(2.0)
+    assert np.shape(sec_scc.eigenvalues[0].band_energies[0].value) == (2,)
+    assert np.shape(sec_scc.eigenvalues[0].kpoints) == (1, 3)
+    assert sec_scc.eigenvalues[0].band_energies[0].value[1].magnitude == approx(5.54481608e-19)
+    assert sec_scc.eigenvalues[0].band_energies[0].occupations[0] == approx(2.0)
     assert sec_scc.single_configuration_calculation_converged
 
 
@@ -88,9 +88,9 @@ def test_gpw2(parser):
     sec_scc = archive.section_run[0].section_single_configuration_calculation[0]
     assert sec_scc.energy_XC.magnitude == approx(-2.19623851e-18)
     assert sec_scc.energy_reference_fermi[0].magnitude == approx(8.60653138e-19)
-    assert np.shape(sec_scc.eigenvalues[0].band_energies[9].band_energies_values) == (8,)
-    assert sec_scc.eigenvalues[0].band_energies[7].band_energies_values[4].magnitude == approx(9.50790908e-19)
-    assert sec_scc.eigenvalues[0].band_energies[0].band_energies_occupations[0] == 1.0
+    assert np.shape(sec_scc.eigenvalues[0].band_energies[9].value) == (8,)
+    assert sec_scc.eigenvalues[0].band_energies[7].value[4].magnitude == approx(9.50790908e-19)
+    assert sec_scc.eigenvalues[0].band_energies[0].occupations[0] == 1.0
     assert sec_scc.single_configuration_calculation_converged
 
 
@@ -99,10 +99,10 @@ def test_spinpol(parser):
     parser.parse('tests/data/Hspinpol.gpw', archive, None)
 
     sec_eig = archive.section_run[0].section_single_configuration_calculation[0].eigenvalues[0]
-    assert np.shape(sec_eig.band_energies_kpoints) == (1, 3)
-    assert np.shape(sec_eig.band_energies[1].band_energies_occupations) == (1,)
-    assert np.shape(sec_eig.band_energies[1].band_energies_values) == (1,)
-    assert sec_eig.band_energies[0].band_energies_values[0].magnitude == approx(-1.20983278e-18)
+    assert np.shape(sec_eig.kpoints) == (1, 3)
+    assert np.shape(sec_eig.band_energies[1].occupations) == (1,)
+    assert np.shape(sec_eig.band_energies[1].value) == (1,)
+    assert sec_eig.band_energies[0].value[0].magnitude == approx(-1.20983278e-18)
     assert archive.section_run[0].section_single_configuration_calculation[0].x_gpaw_magnetic_moments[0] == 1.
 
 
