@@ -8,8 +8,8 @@ from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser import FileParser, TarParser, XMLParser, DataTextParser
 from nomad.datamodel.metainfo.common_dft import Run, BasisSetCellDependent, System,\
-    BasisSetAtomCentered, SamplingMethod, Method, XCFunctionals, BandEnergies, BandEnergiesValues,\
-    SingleConfigurationCalculation, VolumetricData, BandStructure
+    BasisSetAtomCentered, SamplingMethod, Method, XCFunctionals, BandEnergies,\
+    SingleConfigurationCalculation, VolumetricData, BandStructure, Energy, Forces
 
 
 class GPWParser(TarParser):
@@ -362,21 +362,23 @@ class GPAWParser(FairdiParser):
 
         # energies (in gpw, energies are part of parameters)
         energy_keys = [
-            'energy_total', 'energy_free', 'energy_XC', 'electronic_kinetic_energy',
+            'energy_total', 'energy_free', 'energy_XC', 'energy_kinetic_electronic',
             'energy_correction_entropy']
         for key in energy_keys:
             val = self.parser.get_parameter(key)
             if val is not None:
-                setattr(sec_scc, key, self.apply_unit(val, 'energyunit'))
+                sec_scc.m_add_sub_section(getattr(
+                    SingleConfigurationCalculation, key), Energy(
+                        value=self.apply_unit(val, 'energyunit')))
 
         # forces
-        forces_key = ['atom_forces_free', 'atom_forces_free_raw']
-        for key in forces_key:
-            val = self.parser.get_array(key)
-            if val is not None:
-                energyunit = self.apply_unit(1, 'energyunit').units
-                lengthunit = self.apply_unit(1, 'lengthunit').units
-                setattr(sec_scc, key, val * energyunit / lengthunit)
+        if self.parser.get_array('atom_forces_free') is not None:
+            energyunit = self.apply_unit(1, 'energyunit').units
+            lengthunit = self.apply_unit(1, 'lengthunit').units
+            value = self.parser.get_array('atom_forces_free') * energyunit / lengthunit
+            raw = self.parser.get_array('atom_forces_free_raw') * energyunit / lengthunit
+            sec_scc.m_add_sub_section(SingleConfigurationCalculation.forces_free, Forces(
+                value=value, value_raw=raw))
 
         # magnetic moments
         magnetic_moments = self.parser.get_array('magneticmoments')
@@ -396,14 +398,9 @@ class GPAWParser(FairdiParser):
             sec_eigenvalues.kpoints = self.parser.get_array('kpoints')
             values = self.apply_unit(eigenvalues, 'energyunit')
             occupations = self.parser.get_array('occupation')
-            for spin in range(len(values)):
-                for kpt in range(len(values[spin])):
-                    sec_eigenvalues_values = sec_eigenvalues.m_create(BandEnergiesValues)
-                    sec_eigenvalues_values.spin = spin
-                    sec_eigenvalues_values.kpoints_index = kpt
-                    sec_eigenvalues_values.value = values[spin][kpt]
-                    if occupations is not None:
-                        sec_eigenvalues_values.occupations = occupations[spin][kpt]
+            sec_eigenvalues.value = values
+            if occupations is not None:
+                sec_eigenvalues.occupations = occupations
 
         # band path (TODO only in ulm?)
         band_paths = self.parser.get_array('band_paths')
@@ -413,12 +410,7 @@ class GPAWParser(FairdiParser):
                 sec_band_seg = sec_k_band.m_create(BandEnergies)
                 if band_path.get('eigenvalues', None) is not None:
                     energies = self.apply_unit(band_path.get('eigenvalues'), 'energyunit')
-                    for spin in range(len(energies)):
-                        for kpt in range(len(energies[spin])):
-                            sec_band_energies = sec_band_seg.m_create(BandEnergiesValues)
-                            sec_band_energies.spin = spin
-                            sec_band_energies.kpoints_index = kpt
-                            sec_band_energies.value = energies[spin][kpt]
+                    sec_band_seg.value = energies
                 kpoints = band_path.get('kpoints', None)
                 if kpoints is not None:
                     sec_band_seg.kpoints = kpoints
