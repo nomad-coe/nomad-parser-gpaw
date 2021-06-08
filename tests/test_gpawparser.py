@@ -114,8 +114,7 @@ def test_lcao(parser):
     assert archive.section_run[0].program_basis_set_type == 'numeric AOs'
     assert archive.section_run[0].section_basis_set_atom_centered[0].basis_set_atom_centered_short_name == 'dzp'
 
-    sec_vols = archive.section_run[0].section_single_configuration_calculation[0].section_volumetric_data
-    assert len(sec_vols) == 2
-    assert sec_vols[1].volumetric_data_kind == 'potential_effective'
-    assert sec_vols[0].volumetric_data_values[0][13][2][8] == approx(8.70353098415676e+28)
-    assert sec_vols[1].volumetric_data_values[0][5][14][1] == approx(-1235219198924.2632)
+    sec_density = archive.section_run[0].section_single_configuration_calculation[0].density_charge[0]
+    sec_potential = archive.section_run[0].section_single_configuration_calculation[0].potential_effective[0]
+    assert sec_density.value[0][13][2][8].magnitude == approx(8.70353098415676e+28)
+    assert sec_potential.value[0][5][14][1].magnitude == approx(-1235219198924.2632)

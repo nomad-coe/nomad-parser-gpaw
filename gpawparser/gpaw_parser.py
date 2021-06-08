@@ -9,7 +9,7 @@ from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser import FileParser, TarParser, XMLParser, DataTextParser
 from nomad.datamodel.metainfo.common_dft import Run, BasisSetCellDependent, System,\
     BasisSetAtomCentered, SamplingMethod, Method, XCFunctionals, BandEnergies,\
-    SingleConfigurationCalculation, VolumetricData, BandStructure, Energy, Forces
+    SingleConfigurationCalculation, BandStructure, Energy, Forces, Potential, Density
 
 
 class GPWParser(TarParser):
@@ -430,19 +430,19 @@ class GPAWParser(FairdiParser):
             displacements = cell / np.array(npoints)
             lengthunit = self.apply_unit(1, 'lengthunit').units
             energyunit = self.apply_unit(1, 'energyunit').units
-            for key in ['density', 'potential_effective']:
-                val = self.parser.get_array(key)
-                if val is None:
-                    continue
-                sec_vol = sec_scc.m_create(VolumetricData)
-                sec_vol.volumetric_data_kind = key
-                sec_vol.volumetric_data_origin = (origin * lengthunit).to('m').magnitude
-                sec_vol.volumetric_data_displacements = (displacements * lengthunit).to('m').magnitude
-                if key == 'density':
-                    val = (val / lengthunit ** 3).to('1/m**3')
-                else:
-                    val = (val * energyunit / lengthunit ** 3).to('J/m**3')
-                sec_vol.volumetric_data_values = val.magnitude
+            density = self.parser.get_array('density')
+            if density is not None:
+                sec_density = sec_scc.m_create(Density, SingleConfigurationCalculation.density_charge)
+                sec_density.origin = (origin * lengthunit)
+                sec_density.displacements = (displacements * lengthunit)
+                sec_density.value = density / lengthunit ** 3
+
+            potential = self.parser.get_array('potential_effective')
+            if potential is not None:
+                sec_potential = sec_scc.m_create(Potential, SingleConfigurationCalculation.potential_effective)
+                sec_potential.origin = (origin * lengthunit)
+                sec_potential.displacements = (displacements * lengthunit)
+                sec_potential.value = potential * energyunit / lengthunit ** 3
 
         converged = self.parser.get_parameter('converged')
         if converged is not None:
