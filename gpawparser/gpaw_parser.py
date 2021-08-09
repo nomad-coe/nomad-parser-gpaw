@@ -3,13 +3,24 @@ import logging
 import ase
 from ase.io.ulm import Reader
 
-from .metainfo import m_env
 from nomad.units import ureg
 from nomad.parsing import FairdiParser
 from nomad.parsing.file_parser import FileParser, TarParser, XMLParser, DataTextParser
-from nomad.datamodel.metainfo.common_dft import Run, BasisSetCellDependent, System,\
-    BasisSetAtomCentered, SamplingMethod, Method, XCFunctionals, BandEnergies,\
-    SingleConfigurationCalculation, BandStructure, Energy, Forces, Potential, Density
+from nomad.datamodel.metainfo.run.run import Run, Program
+from nomad.datamodel.metainfo.run.method import (
+    Electronic, Method, DFT, Smearing, XCFunctional, Functional, BasisSet, BasisSetAtomCentered,
+    BasisSetCellDependent, Electronic, Scf,
+    MethodReference
+)
+from nomad.datamodel.metainfo.run.system import (
+    System, Atoms,
+    SystemReference
+)
+from nomad.datamodel.metainfo.run.calculation import (
+    Calculation, Energy, EnergyEntry, Forces, ForcesEntry, BandEnergies, BandStructure,
+    Density, Potential, PotentialValue
+)
+from nomad.datamodel.metainfo.workflow import Workflow
 
 
 class GPWParser(TarParser):
@@ -251,7 +262,6 @@ class GPAWParser(FairdiParser):
             mainfile_name_re=(r'^.*\.(gpw2|gpw)$'),
             mainfile_mime_re=r'application/(x-tar|octet-stream)')
 
-        self._metainfo_env = m_env
         self.gpw_parser = GPWParser()
         self.gpw2_parser = GPW2Parser()
         self._xc_map = {
@@ -286,8 +296,7 @@ class GPAWParser(FairdiParser):
         unit = units_map.get(p_unit, p_unit) if p_unit else unit
         return val * unit
 
-    def get_basis_set_name(self):
-        basis_set = self.archive.section_run[-1].program_basis_set_type
+    def get_basis_set_name(self, basis_set):
         if basis_set == 'plane waves':
             pw_cutoff = self.parser.get_parameter('planewavecutoff')
             pw_cutoff = self.apply_unit(pw_cutoff, 'energyunit')
@@ -324,27 +333,53 @@ class GPAWParser(FairdiParser):
         return self.apply_unit(fermi_level, 'energyunit')
 
     def parse_method(self):
-        sec_method = self.archive.section_run[-1].m_create(Method)
-        sec_method.relativity_method = 'pseudo_scalar_relativistic'
-        sec_method.electronic_structure_method = 'DFT'
+        sec_method = self.archive.run[-1].m_create(Method)
+        sec_basis_set = sec_method.m_create(BasisSet)
+        mode = self.get_mode()
+        if mode == 'pw':
+            sec_basis = sec_basis_set.m_create(BasisSetCellDependent)
+            pw_cutoff = self.parser.get_parameter('planewavecutoff')
+            pw_cutoff = self.apply_unit(pw_cutoff, 'energyunit')
+            sec_basis.kind = 'plane waves'
+            sec_basis.planewave_cutoff = pw_cutoff
+            sec_basis.name = self.get_basis_set_name('plane waves')
+        elif mode == 'fd':
+            sec_basis = sec_basis_set.m_create(BasisSetCellDependent)
+            sec_basis.kind = 'real space grid'
+            sec_basis.name = self.get_basis_set_name('real space grid')
+        elif mode == 'lcao':
+            sec_basis = sec_basis_set.m_create(BasisSetAtomCentered)
+            sec_basis.kind = 'numeric AOs'
+            sec_basis.name = self.get_basis_set_name('numeric AOs')
+
+        sec_electronic = sec_method.m_create(Electronic)
+        sec_electronic.relativity_method = 'pseudo_scalar_relativistic'
+        sec_electronic.method = 'DFT'
+        charge = self.parser.get_parameter('charge')
+        if charge is not None:
+            sec_electronic.charge = int(charge)
 
         threshold_energy = self.parser.get_parameter('energyerror')
-        sec_method.scf_threshold_energy_change = self.apply_unit(threshold_energy, 'energyunit')
+        sec_scf = sec_method.m_create(Scf)
+        sec_scf.threshold_energy_change = self.apply_unit(threshold_energy, 'energyunit')
 
         smearing_width = self.parser.get_smearing_width()
         if smearing_width is not None:
-            sec_method.smearing_kind = 'fermi'
-            sec_method.smearing_width = self.apply_unit(
-                smearing_width, 'energyunit').to('joule').magnitude
+            sec_electronic.smearing = Smearing(kind='fermi', width=self.apply_unit(
+                smearing_width, 'energyunit').to('joule').magnitude)
 
-        charge = self.parser.get_parameter('charge')
-        if charge is not None:
-            sec_method.total_charge = int(charge)
-
+        sec_dft = sec_method.m_create(DFT)
+        sec_xc_functional = sec_dft.m_create(XCFunctional)
         xc_functional = self.parser.get_parameter('xcfunctional')
         for xc in self._xc_map.get(xc_functional, [xc_functional]):
-            sec_xc_functionals = sec_method.m_create(XCFunctionals)
-            sec_xc_functionals.XC_functional_name = xc
+            if '_X_' in xc or xc.endswith('_X'):
+                sec_xc_functional.exchange.append(Functional(name=xc))
+            elif '_C_' in xc or xc.endswith('_C'):
+                sec_xc_functional.correlation.append(Functional(name=xc))
+            elif 'HYB' in xc:
+                sec_xc_functional.hybrid.append(Functional(name=xc))
+            else:
+                sec_xc_functional.contributions.append(Functional(name=xc))
 
         method_keys = [
             'fix_magnetic_moment', 'fix_density', 'density_convergence_criterion',
@@ -357,18 +392,19 @@ class GPAWParser(FairdiParser):
             setattr(sec_method, 'x_gpaw_%s' % key, val)
 
     def parse_scc(self):
-        sec_run = self.archive.section_run[-1]
-        sec_scc = sec_run.m_create(SingleConfigurationCalculation)
+        sec_run = self.archive.run[-1]
+        sec_scc = sec_run.m_create(Calculation)
 
         # energies (in gpw, energies are part of parameters)
         energy_keys = [
             'energy_total', 'energy_free', 'energy_XC', 'energy_kinetic_electronic',
             'energy_correction_entropy']
+        sec_energy = sec_scc.m_create(Energy)
         for key in energy_keys:
             val = self.parser.get_parameter(key)
             if val is not None:
-                sec_scc.m_add_sub_section(getattr(
-                    SingleConfigurationCalculation, key), Energy(
+                sec_energy.m_add_sub_section(getattr(
+                    Energy, key.replace('energy_', '').lower()), EnergyEntry(
                         value=self.apply_unit(val, 'energyunit')))
 
         # forces
@@ -377,8 +413,7 @@ class GPAWParser(FairdiParser):
             lengthunit = self.apply_unit(1, 'lengthunit').units
             value = self.parser.get_array('atom_forces_free') * energyunit / lengthunit
             raw = self.parser.get_array('atom_forces_free_raw') * energyunit / lengthunit
-            sec_scc.m_add_sub_section(SingleConfigurationCalculation.forces_free, Forces(
-                value=value, value_raw=raw))
+            sec_scc.forces = Forces(free=ForcesEntry(value=value, value_raw=raw))
 
         # magnetic moments
         magnetic_moments = self.parser.get_array('magneticmoments')
@@ -389,7 +424,7 @@ class GPAWParser(FairdiParser):
         # fermi level
         fermi_level = self.get_fermi_level()
         if fermi_level is not None:
-            sec_scc.energy_reference_fermi = fermi_level
+            sec_scc.energy.fermi = fermi_level[0]
 
         # eigenvalues
         eigenvalues = self.parser.get_array('eigenvalues')
@@ -405,7 +440,7 @@ class GPAWParser(FairdiParser):
         # band path (TODO only in ulm?)
         band_paths = self.parser.get_array('band_paths')
         if band_paths is not None:
-            sec_k_band = sec_scc.m_create(BandStructure, SingleConfigurationCalculation.band_structure_electronic)
+            sec_k_band = sec_scc.m_create(BandStructure, Calculation.band_structure_electronic)
             for band_path in band_paths:
                 sec_band_seg = sec_k_band.m_create(BandEnergies)
                 if band_path.get('eigenvalues', None) is not None:
@@ -432,49 +467,49 @@ class GPAWParser(FairdiParser):
             energyunit = self.apply_unit(1, 'energyunit').units
             density = self.parser.get_array('density')
             if density is not None:
-                sec_density = sec_scc.m_create(Density, SingleConfigurationCalculation.density_charge)
+                sec_density = sec_scc.m_create(Density, Calculation.density_charge)
                 sec_density.origin = (origin * lengthunit)
                 sec_density.displacements = (displacements * lengthunit)
                 sec_density.value = density / lengthunit ** 3
 
             potential = self.parser.get_array('potential_effective')
             if potential is not None:
-                sec_potential = sec_scc.m_create(Potential, SingleConfigurationCalculation.potential_effective)
-                sec_potential.origin = (origin * lengthunit)
-                sec_potential.displacements = (displacements * lengthunit)
-                sec_potential.value = potential * energyunit / lengthunit ** 3
+                sec_scc.potential = Potential(effective=[PotentialValue()])
+                sec_scc.potential.effective[0].origin = (origin * lengthunit)
+                sec_scc.potential.effective[0].displacements = (displacements * lengthunit)
+                sec_scc.potential.effective[0].value = potential * energyunit / lengthunit ** 3
 
         converged = self.parser.get_parameter('converged')
         if converged is not None:
-            sec_scc.single_configuration_calculation_converged = converged
+            sec_scc.calculation_converged = converged
 
-        sec_scc.single_configuration_calculation_to_system_ref = sec_run.section_system[-1]
-        sec_scc.single_configuration_to_calculation_method_ref = sec_run.section_method[-1]
+        sec_scc.system_ref.append(SystemReference(value=sec_run.system[-1]))
+        sec_scc.method_ref.append(MethodReference(value=sec_run.method[-1]))
 
     def parse_system(self):
-        sec_system = self.archive.section_run[-1].m_create(System)
+        sec_system = self.archive.run[-1].m_create(System)
+        sec_atoms = sec_system.m_create(Atoms)
 
         cell = self.parser.get_array('unitcell')
         if cell is not None:
             cell = self.apply_unit(cell, 'lengthunit')
-            sec_system.lattice_vectors = cell
-            sec_system.simulation_cell = cell
+            sec_atoms.lattice_vectors = cell
 
-        sec_system.atom_labels = [
+        sec_system.atoms.labels = [
             ase.data.chemical_symbols[z] for z in self.parser.get_array('atomicnumbers')]
 
         positions = self.parser.get_array('atom_positions')
-        sec_system.atom_positions = self.apply_unit(positions, 'lengthunit')
+        sec_atoms.positions = self.apply_unit(positions, 'lengthunit')
 
         pbc = [True, True, True] if self.get_mode() == 'pw' else np.array(
             self.parser.get_array('boundaryconditions'), bool)
-        sec_system.configuration_periodic_dimensions = pbc
+        sec_atoms.periodic = pbc
 
         momenta = self.parser.get_array('momenta')
         if momenta is not None:
             masses = np.array([ase.data.atomic_masses[self.parser.get_array('atomicnumbers')]])
             velocities = momenta / masses.reshape(-1, 1)
-            sec_system.atom_velocities = velocities * ase.units.fs / ase.units.Angstrom * ureg.angstrom / ureg.fs
+            sec_atoms.velocities = velocities * ase.units.fs / ase.units.Angstrom * ureg.angstrom / ureg.fs
 
     def parse(self, filepath, archive, logger):
         self.filepath = filepath
@@ -483,29 +518,10 @@ class GPAWParser(FairdiParser):
         self.init_parser(filepath, logger)
 
         sec_run = self.archive.m_create(Run)
-        sec_run.program_name = 'GPAW'
-        sec_run.program_version = self.parser.get_program_version()
+        sec_run.program = Program(name='GPAW', version=self.parser.get_program_version())
 
-        mode = self.get_mode()
-        if mode == 'pw':
-            sec_run.program_basis_set_type = 'plane waves'
-            sec_basis = sec_run.m_create(BasisSetCellDependent)
-            pw_cutoff = self.parser.get_parameter('planewavecutoff')
-            pw_cutoff = self.apply_unit(pw_cutoff, 'energyunit')
-            sec_basis.basis_set_planewave_cutoff = pw_cutoff
-            sec_basis.basis_set_cell_dependent_name = self.get_basis_set_name()
-        elif mode == 'fd':
-            sec_basis = sec_run.m_create(BasisSetCellDependent)
-            sec_run.program_basis_set_type = 'real space grid'
-            sec_basis.basis_set_cell_dependent_name = self.get_basis_set_name()
-        elif mode == 'lcao':
-            sec_run.program_basis_set_type = 'numeric AOs'
-            sec_basis = sec_run.m_create(BasisSetAtomCentered)
-            sec_basis.basis_set_atom_centered_short_name = self.get_basis_set_name()
-
-        sec_sampling_method = sec_run.m_create(SamplingMethod)
-        sec_sampling_method.sampling_method = 'geometry_optimization'
-        sec_sampling_method.ensemble_type = 'NVE'
+        sec_workflow = self.archive.m_create(Workflow)
+        sec_workflow.type = 'geometry_optimization'
 
         self.parse_method()
 
