@@ -21,6 +21,7 @@ from nomad.datamodel.metainfo.run.calculation import (
     Density, Potential, PotentialValue
 )
 from nomad.datamodel.metainfo.workflow import Workflow
+import gpawparser.metainfo.gpaw  # pylint: disable=unused-import
 
 
 class GPWParser(TarParser):
@@ -474,10 +475,10 @@ class GPAWParser(FairdiParser):
 
             potential = self.parser.get_array('potential_effective')
             if potential is not None:
-                sec_scc.potential = Potential(effective=[PotentialValue()])
-                sec_scc.potential.effective[0].origin = (origin * lengthunit)
-                sec_scc.potential.effective[0].displacements = (displacements * lengthunit)
-                sec_scc.potential.effective[0].value = potential * energyunit / lengthunit ** 3
+                sec_scc.potential.append(Potential(effective=[PotentialValue()]))
+                sec_scc.potential[0].effective[0].origin = (origin * lengthunit)
+                sec_scc.potential[0].effective[0].displacements = (displacements * lengthunit)
+                sec_scc.potential[0].effective[0].value = potential * energyunit / lengthunit ** 3
 
         converged = self.parser.get_parameter('converged')
         if converged is not None:

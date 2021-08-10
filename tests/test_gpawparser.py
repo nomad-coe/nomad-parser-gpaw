@@ -58,10 +58,10 @@ def test_gpw(parser):
     assert sec_scc.x_gpaw_fixed_spin_Sz == 0.0
     assert sec_scc.energy.fermi.magnitude == approx(-4.99922789e-19)
     # there is supposed to be magnetic but read eigenvalues are not spinpol
-    assert np.shape(sec_scc.eigenvalues.value[0][0]) == (2,)
-    assert np.shape(sec_scc.eigenvalues.kpoints) == (1, 3)
-    assert sec_scc.eigenvalues.value[0][0][1].magnitude == approx(5.54481608e-19)
-    assert sec_scc.eigenvalues.occupations[0][0][0] == approx(2.0)
+    assert np.shape(sec_scc.eigenvalues[0].value[0][0]) == (2,)
+    assert np.shape(sec_scc.eigenvalues[0].kpoints) == (1, 3)
+    assert sec_scc.eigenvalues[0].value[0][0][1].magnitude == approx(5.54481608e-19)
+    assert sec_scc.eigenvalues[0].occupations[0][0][0] == approx(2.0)
     assert sec_scc.calculation_converged
 
 
@@ -88,9 +88,9 @@ def test_gpw2(parser):
     sec_scc = archive.run[0].calculation[0]
     assert sec_scc.energy.xc.value.magnitude == approx(-2.19623851e-18)
     assert sec_scc.energy.fermi.magnitude == approx(8.60653138e-19)
-    assert np.shape(sec_scc.eigenvalues.value[0][9]) == (8,)
-    assert sec_scc.eigenvalues.value[0][7][4].magnitude == approx(9.50790908e-19)
-    assert sec_scc.eigenvalues.occupations[0][0][0] == 1.0
+    assert np.shape(sec_scc.eigenvalues[0].value[0][9]) == (8,)
+    assert sec_scc.eigenvalues[0].value[0][7][4].magnitude == approx(9.50790908e-19)
+    assert sec_scc.eigenvalues[0].occupations[0][0][0] == 1.0
     assert sec_scc.calculation_converged
 
 
@@ -98,7 +98,7 @@ def test_spinpol(parser):
     archive = EntryArchive()
     parser.parse('tests/data/Hspinpol.gpw', archive, None)
 
-    sec_eig = archive.run[0].calculation[0].eigenvalues
+    sec_eig = archive.run[0].calculation[0].eigenvalues[0]
     assert np.shape(sec_eig.kpoints) == (1, 3)
     assert np.shape(sec_eig.occupations[1][0]) == (1,)
     assert np.shape(sec_eig.value[1][0]) == (1,)
@@ -116,6 +116,6 @@ def test_lcao(parser):
     assert archive.run[0].method[0].basis_set[0].atom_centered.name == 'dzp'
 
     sec_density = archive.run[0].calculation[0].density_charge[0]
-    sec_potential = archive.run[0].calculation[0].potential.effective[0]
+    sec_potential = archive.run[0].calculation[0].potential[0].effective[0]
     assert sec_density.value[0][13][2][8].magnitude == approx(8.70353098415676e+28)
     assert sec_potential.value[0][5][14][1].magnitude == approx(-1235219198924.2632)
