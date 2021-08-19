@@ -434,7 +434,7 @@ class GPAWParser(FairdiParser):
             sec_eigenvalues.kpoints = self.parser.get_array('kpoints')
             values = self.apply_unit(eigenvalues, 'energyunit')
             occupations = self.parser.get_array('occupation')
-            sec_eigenvalues.value = values
+            sec_eigenvalues.energies = values
             if occupations is not None:
                 sec_eigenvalues.occupations = occupations
 
@@ -446,7 +446,7 @@ class GPAWParser(FairdiParser):
                 sec_band_seg = sec_k_band.m_create(BandEnergies)
                 if band_path.get('eigenvalues', None) is not None:
                     energies = self.apply_unit(band_path.get('eigenvalues'), 'energyunit')
-                    sec_band_seg.value = energies
+                    sec_band_seg.energies = energies
                 kpoints = band_path.get('kpoints', None)
                 if kpoints is not None:
                     sec_band_seg.kpoints = kpoints

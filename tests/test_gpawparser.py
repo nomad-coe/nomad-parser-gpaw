@@ -58,9 +58,9 @@ def test_gpw(parser):
     assert sec_scc.x_gpaw_fixed_spin_Sz == 0.0
     assert sec_scc.energy.fermi.magnitude == approx(-4.99922789e-19)
     # there is supposed to be magnetic but read eigenvalues are not spinpol
-    assert np.shape(sec_scc.eigenvalues[0].value[0][0]) == (2,)
+    assert np.shape(sec_scc.eigenvalues[0].energies[0][0]) == (2,)
     assert np.shape(sec_scc.eigenvalues[0].kpoints) == (1, 3)
-    assert sec_scc.eigenvalues[0].value[0][0][1].magnitude == approx(5.54481608e-19)
+    assert sec_scc.eigenvalues[0].energies[0][0][1].magnitude == approx(5.54481608e-19)
     assert sec_scc.eigenvalues[0].occupations[0][0][0] == approx(2.0)
     assert sec_scc.calculation_converged
 
@@ -88,8 +88,8 @@ def test_gpw2(parser):
     sec_scc = archive.run[0].calculation[0]
     assert sec_scc.energy.xc.value.magnitude == approx(-2.19623851e-18)
     assert sec_scc.energy.fermi.magnitude == approx(8.60653138e-19)
-    assert np.shape(sec_scc.eigenvalues[0].value[0][9]) == (8,)
-    assert sec_scc.eigenvalues[0].value[0][7][4].magnitude == approx(9.50790908e-19)
+    assert np.shape(sec_scc.eigenvalues[0].energies[0][9]) == (8,)
+    assert sec_scc.eigenvalues[0].energies[0][7][4].magnitude == approx(9.50790908e-19)
     assert sec_scc.eigenvalues[0].occupations[0][0][0] == 1.0
     assert sec_scc.calculation_converged
 
@@ -101,8 +101,8 @@ def test_spinpol(parser):
     sec_eig = archive.run[0].calculation[0].eigenvalues[0]
     assert np.shape(sec_eig.kpoints) == (1, 3)
     assert np.shape(sec_eig.occupations[1][0]) == (1,)
-    assert np.shape(sec_eig.value[1][0]) == (1,)
-    assert sec_eig.value[0][0][0].magnitude == approx(-1.20983278e-18)
+    assert np.shape(sec_eig.energies[1][0]) == (1,)
+    assert sec_eig.energies[0][0][0].magnitude == approx(-1.20983278e-18)
     assert archive.run[0].calculation[0].x_gpaw_magnetic_moments[0] == 1.
 
 
