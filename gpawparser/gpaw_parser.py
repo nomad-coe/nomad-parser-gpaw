@@ -352,6 +352,7 @@ class GPAWParser(FairdiParser):
             sec_basis = sec_basis_set.m_create(BasisSetAtomCentered)
             sec_basis.kind = 'numeric AOs'
             sec_basis.name = self.get_basis_set_name('numeric AOs')
+        sec_basis_set.type = sec_basis.kind
 
         sec_electronic = sec_method.m_create(Electronic)
         sec_electronic.relativity_method = 'pseudo_scalar_relativistic'
