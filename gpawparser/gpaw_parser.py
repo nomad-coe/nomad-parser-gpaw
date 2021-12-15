@@ -456,7 +456,7 @@ class GPAWParser(FairdiParser):
         density = self.parser.get_array('density')
         if density is not None:
             cell = self.parser.get_array('unitcell')
-            origin = -0.5 * cell.sum(axis=0)
+            origin = -0.5 * np.array(cell).sum(axis=0)
             pbc = self.parser.get_array('boundaryconditions')
             npoints = np.array(density.shape[1:])
             npoints = [(npt + 1) if not pbc[i] else npt for i, npt in enumerate(npoints)]
