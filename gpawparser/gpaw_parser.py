@@ -18,7 +18,6 @@ from nomad.datamodel.metainfo.simulation.calculation import (
     Calculation, Energy, EnergyEntry, Forces, ForcesEntry, BandEnergies, BandStructure,
     Density, Potential, PotentialValue
 )
-from nomad.datamodel.metainfo.workflow import Workflow
 import gpawparser.metainfo.gpaw  # pylint: disable=unused-import
 
 
@@ -517,9 +516,6 @@ class GPAWParser(FairdiParser):
 
         sec_run = self.archive.m_create(Run)
         sec_run.program = Program(name='GPAW', version=self.parser.get_program_version())
-
-        sec_workflow = self.archive.m_create(Workflow)
-        sec_workflow.type = 'geometry_optimization'
 
         self.parse_method()
 
